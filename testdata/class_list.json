@@ -1,0 +1,23 @@
+{
+  "@odata.count": 2,
+  "value": [
+    {
+      "id": "cccccccc-3333-4444-5555-666677778888",
+      "idText": "P_S",
+      "name": "Feed-in with unmetered generating plant",
+      "description": "For mapping models for feed-in with unmetered generation plant",
+      "classType_code": "CLASS",
+      "version": "1",
+      "division_code": "EL"
+    },
+    {
+      "id": "cccccccc-4444-5555-6666-777788889999",
+      "idText": "B_S",
+      "name": "Standard electricity purchase",
+      "description": "For standard electricity purchase models",
+      "classType_code": "SAPTEMPLATE",
+      "version": "1",
+      "division_code": "EL"
+    }
+  ]
+}

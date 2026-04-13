@@ -32,12 +32,14 @@ def _to_odata_camel(snake: str) -> str:
     a well-known suffix (code, id, PD). Everything before it gets camelCased.
     """
     # Known OData suffixes that must be preserved with underscore prefix
-    odata_suffixes = ("_code", "_id", "_Code")
+    odata_suffixes = ("_code", "_id")
 
     for suffix in odata_suffixes:
         if snake.endswith(suffix) and len(snake) > len(suffix):
             prefix = snake[: -len(suffix)]
             camel_prefix = to_camel(prefix)
+            # Fix "Pd" → "PD" in the prefix too (e.g. actor_pd_id → actorPD_id)
+            camel_prefix = camel_prefix.replace("Pd", "PD")
             return camel_prefix + suffix
 
     # Handle PD (process data) abbreviation: _pd at end or _pd_ in middle

@@ -77,7 +77,9 @@ func (o *ListOptions) queryParams() url.Values {
 
 		clauses := make([]string, 0, len(o.Filter))
 		for _, k := range keys {
-			clauses = append(clauses, fmt.Sprintf("%s eq '%s'", k, o.Filter[k]))
+			// OData V4 §5.1.1.6.1: single quotes in string literals must be doubled.
+			escaped := strings.ReplaceAll(o.Filter[k], "'", "''")
+			clauses = append(clauses, fmt.Sprintf("%s eq '%s'", k, escaped))
 		}
 		v.Set("$filter", strings.Join(clauses, " and "))
 	}
