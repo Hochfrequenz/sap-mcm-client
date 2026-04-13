@@ -1,0 +1,92 @@
+[project]
+name = "sap-mcm-client"
+description = "Typed Python client for the SAP Cloud for Utilities Foundation Measurement Concept Management (MCM) APIs"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Hochfrequenz Unternehmensberatung GmbH", email = "info+github@hochfrequenz.de" }]
+keywords = ["sap", "mcm", "odata", "utilities", "measurement-concept"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "pydantic>=2",
+    "httpx>=0.27",
+]
+dynamic = ["readme", "version"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest==9.0.2",
+]
+linting = [
+    "pylint==4.0.5",
+]
+type_check = [
+    "mypy==1.20.0",
+]
+spell_check = [
+    "codespell==2.4.2",
+]
+coverage = [
+    "coverage==7.13.5",
+]
+formatting = [
+    "black==26.3.1",
+    "isort==8.0.1",
+]
+packaging = [
+    "build==1.4.2",
+    "twine==6.2.0",
+]
+
+[project.urls]
+Changelog = "https://github.com/Hochfrequenz/mkv-api-client/releases"
+Homepage = "https://github.com/Hochfrequenz/mkv-api-client"
+
+[tool.black]
+line-length = 120
+target_version = ["py311", "py312", "py313", "py314"]
+
+[tool.isort]
+line_length = 120
+profile = "black"
+
+[tool.pylint."MESSAGES CONTROL"]
+max-line-length = 120
+
+[tool.mypy]
+disable_error_code = []
+plugins = ["pydantic.mypy"]
+
+[build-system]
+requires = ["hatchling>=1.8.0", "hatch-vcs", "hatch-fancy-pypi-readme"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+fragments = [{ path = "README.md" }]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/_sap_mcm_client_version.py"
+template = '''
+version = "{version}"
+'''
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/unittests"]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+sources = ["src"]
