@@ -69,6 +69,18 @@ CLASS_EXPAND_MAP: dict[str, str | None] = {
 }
 """``$expand`` map for the Measurement Concept Class endpoint."""
 
+MIGRATION_EXPAND_MAP: dict[str, str | None] = {
+    "change_processes": "changeProcesses",
+    "status": "status",
+    "metering_locations": "meteringLocations($expand=meteringTasks)",
+    "actors": "actors",
+    "market_locations": "marketLocations($expand=calculationRules($expand=usages),actors)",
+    "addresses": "addresses",
+    "operand_mappings": "operandMappings",
+    "all": None,  # sentinel: expand everything via $expand=*
+}
+"""``$expand`` map for the Measurement Concept Instance Migration endpoint."""
+
 MODEL_EXPAND_MAP: dict[str, str | None] = {
     "market_locations": (
         "marketLocations("

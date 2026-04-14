@@ -106,10 +106,12 @@ class CalculationRule(MCMBaseModel):
     )
     planned_register_code: str | None = Field(
         None,
+        alias="plannedRegisterCode",
         description="The OBIS-based register code that is planned before the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     position: int | None = Field(
@@ -160,6 +162,7 @@ class MarketLocation(MCMBaseModel):
     )
     market_location_id: str | None = Field(
         None,
+        alias="marketLocationId",
         max_length=33,
         description="The universally unique identifier (UUID) of the market location. ",
     )
@@ -245,10 +248,12 @@ class MeteringTask(MCMBaseModel):
     )
     planned_register_code: str | None = Field(
         None,
+        alias="plannedRegisterCode",
         description="The OBIS-based register code that is planned before the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
 
@@ -282,6 +287,7 @@ class MeteringLocation(MCMBaseModel):
     )
     metering_location_id: str | None = Field(
         None,
+        alias="meteringLocationId",
         max_length=33,
         description="The universally unique identifier (UUID) of the metering location. ",
     )
@@ -330,6 +336,7 @@ class MeteringLocation(MCMBaseModel):
     )
     device_serial_id: str | None = Field(
         None,
+        alias="deviceSerialId",
         max_length=40,
         description="The universally unique identifier (UUID) of the device.",
     )
@@ -456,6 +463,7 @@ class InstanceCharacteristic(MCMBaseModel):
     )
     model_entity_id: UUID | None = Field(
         None,
+        alias="modelEntityId",
         description="The universally unique identifier (UUID) of the model entity.",
     )
     characteristic_code: str | None = Field(
@@ -480,11 +488,13 @@ class ChangeProcess(MCMBaseModel):
     )
     external_order_id: str | None = Field(
         None,
+        alias="externalOrderId",
         max_length=40,
         description="The ID of the external order that corresponds to the instantiation of the measurement concept.",
     )
     external_process_id: str | None = Field(
         None,
+        alias="externalProcessId",
         max_length=40,
         description="The reference to the process ID from the pre-system.",
     )
@@ -560,6 +570,7 @@ class MeasurementConceptInstance(MCMBaseModel):
     )
     difference2_predecessor_measurement_concept_instance_id: UUID | None = Field(
         None,
+        alias="difference2Predecessor_measurementConceptInstance_id",
         description="The universally unique identifier (UUID) of the predecessor version of the measurement concept instance.",
     )
     measurement_model_id: UUID | None = Field(
@@ -717,11 +728,13 @@ class MeteringLocationUpdate(MCMRequestModel):
     )
     device_serial_id: str | None = Field(
         None,
+        alias="deviceSerialId",
         max_length=40,
         description="The universally unique identifier (UUID) of the device.",
     )
     metering_location_id: str | None = Field(
         None,
+        alias="meteringLocationId",
         max_length=33,
         description="The universally unique identifier (UUID) of the metering location.",
     )
@@ -732,6 +745,7 @@ class MarketLocationUpdate(MCMRequestModel):
 
     market_location_id: str | None = Field(
         None,
+        alias="marketLocationId",
         max_length=33,
         description="The ID of the market location.",
     )
@@ -765,6 +779,7 @@ class MeteringTaskUpdate(MCMRequestModel):
 
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
 

@@ -1,0 +1,63 @@
+{
+  "@context": "$metadata#StagedMigrationInstances",
+  "@odata.count": 3,
+  "value": [
+    {
+      "id": "aa000001-1111-2222-3333-444455556666",
+      "modifiedAt": "2026-02-01T12:00:00Z",
+      "createdAt": "2026-02-01T11:55:00Z",
+      "createdBy": "migrate-service@example.com",
+      "modifiedBy": "migrate-service@example.com",
+      "requestId": "f1343cac-b0ee-42aa-af23-43b1f628f61d",
+      "idText": "STAGED-2026-02-01-01",
+      "instanceData": null,
+      "overwrite": false,
+      "status_code": "MIGRATED",
+      "statusReason": "Successfully migrated.",
+      "timeMigrationIn": "2026-02-01T11:55:00Z",
+      "timeMigrationStart": "2026-02-01T11:55:30Z",
+      "timeMigrationEnd": "2026-02-01T11:58:10Z",
+      "timeMigrationDuration": "00:02:40",
+      "instanceOverallStatus_code": "ACTIVE",
+      "instanceStatus_id": "eeeeeeee-4444-5555-6666-777788889999"
+    },
+    {
+      "id": "aa000002-1111-2222-3333-444455556666",
+      "modifiedAt": "2026-02-01T12:05:00Z",
+      "createdAt": "2026-02-01T11:55:00Z",
+      "createdBy": "migrate-service@example.com",
+      "modifiedBy": "migrate-service@example.com",
+      "requestId": "f1343cac-b0ee-42aa-af23-43b1f628f61d",
+      "idText": "STAGED-2026-02-01-02",
+      "instanceData": "{\"id\":\"b2c3d4e5-f6a7-8901-bcde-f12345678902\",\"idText\":\"MIG-INST-LEGACY-002\"}",
+      "overwrite": true,
+      "status_code": "FAILED",
+      "statusReason": "Validation error: missing metering location.",
+      "timeMigrationIn": "2026-02-01T11:55:00Z",
+      "timeMigrationStart": "2026-02-01T12:00:00Z",
+      "timeMigrationEnd": "2026-02-01T12:00:05Z",
+      "timeMigrationDuration": "00:00:05",
+      "instanceOverallStatus_code": null,
+      "instanceStatus_id": null
+    },
+    {
+      "id": "aa000003-1111-2222-3333-444455556666",
+      "modifiedAt": "2026-02-01T11:55:05Z",
+      "createdAt": "2026-02-01T11:55:00Z",
+      "createdBy": "migrate-service@example.com",
+      "modifiedBy": "migrate-service@example.com",
+      "requestId": "f1343cac-b0ee-42aa-af23-43b1f628f61d",
+      "idText": "STAGED-2026-02-01-03",
+      "instanceData": "{\"id\":\"b2c3d4e5-f6a7-8901-bcde-f12345678903\",\"idText\":\"MIG-INST-LEGACY-003\"}",
+      "overwrite": false,
+      "status_code": "RECEIVED",
+      "statusReason": null,
+      "timeMigrationIn": "2026-02-01T11:55:05Z",
+      "timeMigrationStart": null,
+      "timeMigrationEnd": null,
+      "timeMigrationDuration": null,
+      "instanceOverallStatus_code": null,
+      "instanceStatus_id": null
+    }
+  ]
+}

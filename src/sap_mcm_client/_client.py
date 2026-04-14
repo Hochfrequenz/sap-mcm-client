@@ -26,7 +26,13 @@ import httpx
 
 from sap_mcm_client._auth import OAuth2ClientCredentials
 from sap_mcm_client._odata import ODATA_HEADERS
-from sap_mcm_client._resources import ClassResource, InstanceResource, ModelResource
+from sap_mcm_client._resources import (
+    ClassResource,
+    InstanceResource,
+    MigrationResource,
+    ModelResource,
+    TimeSeriesResource,
+)
 
 
 class MCMClient:
@@ -77,6 +83,8 @@ class MCMClient:
         self._instances = InstanceResource(self._http, self._base_url)
         self._classes = ClassResource(self._http, self._base_url)
         self._models = ModelResource(self._http, self._base_url)
+        self._migration = MigrationResource(self._http, self._base_url)
+        self._time_series = TimeSeriesResource(self._http, self._base_url)
 
     # -- resource accessors -------------------------------------------------
 
@@ -94,6 +102,16 @@ class MCMClient:
     def models(self) -> ModelResource:
         """Access the Measurement Concept Model API."""
         return self._models
+
+    @property
+    def migration(self) -> MigrationResource:
+        """Access the Measurement Concept Instance Migration API."""
+        return self._migration
+
+    @property
+    def time_series(self) -> TimeSeriesResource:
+        """Access the Time Series API."""
+        return self._time_series
 
     # -- lifecycle ----------------------------------------------------------
 

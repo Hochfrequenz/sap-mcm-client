@@ -1,0 +1,180 @@
+{
+  "@context": "$metadata#MigrationInstances(changeProcesses(),status(),meteringLocations(meteringTasks()),actors(),marketLocations(calculationRules(usages()),actorsMapping()),addresses(),operandMappings())/$entity",
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "idText": "MIG-INST-LEGACY-001",
+  "version": "1",
+  "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
+  "measurementClass_id": "cccccccc-3333-4444-5555-666677778888",
+  "leadingGrid_code": "SNE956610053427",
+  "description": "Migrated measurement concept instance from legacy system.",
+  "orderer_code": "SP_DIST",
+  "division_code": "EL",
+  "leadingAddress_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+  "installedOn": "2024-03-15",
+  "installedUntil": "9999-12-31",
+  "commercialSetupOn": "2024-03-20",
+  "overallStatus_code": "ACTIVE",
+  "status_id": "eeeeeeee-4444-5555-6666-777788889999",
+  "modifiedAt": "2024-03-20T14:22:17Z",
+  "overwrite": false,
+  "addresses": [
+    {
+      "id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "country_code": "DE",
+      "cityID": "WALLDORF",
+      "cityName": "Walldorf",
+      "postalCode": "69190",
+      "streetID": "RINGSTRASSE",
+      "streetName": "Ringstrasse",
+      "houseNumber": "981",
+      "floorNumber": "5",
+      "supplement": "5.Stock App 67",
+      "latitude": "49.30637000",
+      "longitude": "8.64236000",
+      "timeZone": "CEST"
+    }
+  ],
+  "changeProcesses": [
+    {
+      "id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "externalOrderId": "LEGACY-ORD-4711",
+      "externalProcessId": "LEGACY-PROC-0815",
+      "processType_code": "CREATE",
+      "status_id": "eeeeeeee-4444-5555-6666-777788889999",
+      "finished": true,
+      "modifiedAt": "2024-03-20T14:22:17Z"
+    }
+  ],
+  "meteringLocations": [
+    {
+      "id": "11111111-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "modelMeteringLocation_id": "22222222-aaaa-bbbb-cccc-000000000001",
+      "idText": "Migrated Metering Location Z1 (legacy)",
+      "type_code": "GRIDMES",
+      "position": 1,
+      "meteringLocationId": "DE0001234567890000000000000012345",
+      "grid_code": "SNE956610053427",
+      "altitude": "125.500",
+      "gridLevel_code": "MV",
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "lossTransformerDemand": "0",
+      "lossLineDemand": "0",
+      "lossTransformerSupply": "0",
+      "lossLineSupply": "0",
+      "transformerRequired": false,
+      "deviceSerialId": "SER-9876543210",
+      "installationDate": "2024-03-15",
+      "meteringTasks": [
+        {
+          "id": "33333333-aaaa-bbbb-cccc-000000000001",
+          "meteringLocation_id": "11111111-aaaa-bbbb-cccc-000000000001",
+          "modelMeteringTasks_id": "bbb50001-5555-5555-5555-501010000001",
+          "direction_code": "OUT",
+          "lossFactorTransformer": "1",
+          "lossFactorLine": "1",
+          "type_code": "AE",
+          "position": 1,
+          "plannedMeteringProcedure_code": "SLP",
+          "plannedRegisterCode": "1.8.x",
+          "registerCode": "1.8.0"
+        }
+      ]
+    }
+  ],
+  "marketLocations": [
+    {
+      "id": "44444444-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "modelMarketLocation_id": "aaaaaaaa-2222-3333-1111-100000000001",
+      "idText": "Migrated Market Location VB (legacy)",
+      "type_code": "SUPPLY",
+      "direction_code": "OUT",
+      "position": 1,
+      "marketLocationId": "51111111111",
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "commercialSetupDate": "2024-03-20",
+      "virtualMarketLocation": false,
+      "billingProcedure": "SLP",
+      "settlementProcedure": "SLP",
+      "calculationRules": [
+        {
+          "id": "55555555-aaaa-bbbb-cccc-000000000001",
+          "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+          "modelCalculationRule_id": "ffff1111-2222-3333-1111-100000000001",
+          "meteringProcedure_code": "SLP",
+          "expression": "Z1B",
+          "plannedRegisterCode": "1.8.x",
+          "position": 1,
+          "usages": [
+            {
+              "id": "66666666-aaaa-bbbb-cccc-000000000001",
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "usage_code": "GRIDUSE",
+              "position": 1
+            },
+            {
+              "id": "66666666-aaaa-bbbb-cccc-000000000002",
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "usage_code": "OUBILL",
+              "position": 2
+            }
+          ]
+        }
+      ],
+      "actorsMapping": [
+        {
+          "id": "88888888-bbbb-cccc-dddd-000000000001",
+          "actor_id": "77777777-aaaa-bbbb-cccc-000000000001",
+          "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+          "position": 1
+        }
+      ]
+    }
+  ],
+  "actors": [
+    {
+      "id": "77777777-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "modelActor_id": "88888888-aaaa-bbbb-cccc-000000000001",
+      "idText": "Migrated Actor VB (residential consumer)",
+      "type_code": "CONSUMER",
+      "direction_code": "OUT",
+      "position": 1,
+      "subType_code": "RESID",
+      "energySource_code": "GRID",
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "isOwnConsumption": false,
+      "installationDate": "2024-03-15",
+      "commercialSetupDate": "2024-03-20",
+      "interruptible_code": null,
+      "externalActorId": "LEGACY-ACT-0815",
+      "marketLocations": [
+        {
+          "id": "88888888-bbbb-cccc-dddd-000000000001",
+          "actor_id": "77777777-aaaa-bbbb-cccc-000000000001",
+          "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+          "position": 1
+        }
+      ]
+    }
+  ],
+  "operandMappings": [
+    {
+      "id": "99999999-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "operand": "Z1B",
+      "meteringTask_id": "33333333-aaaa-bbbb-cccc-000000000001",
+      "position": 1
+    }
+  ],
+  "status": {
+    "id": "eeeeeeee-4444-5555-6666-777788889999",
+    "measurementConceptInstance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "changeProcess_id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+    "instanceStatus_code": "ACTIVE",
+    "processStatus_code": "COMPLETED"
+  }
+}

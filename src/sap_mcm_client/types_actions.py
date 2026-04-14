@@ -38,6 +38,7 @@ class _InstanceCharacteristic(MCMRequestModel):
     )
     model_entity_id: UUID | None = Field(
         None,
+        alias="modelEntityId",
         description="The universally unique identifier (UUID) of the model entity.",
     )
     value: str | None = Field(
@@ -51,6 +52,7 @@ class _ChangeProcess(MCMRequestModel):
 
     external_order_id: str | None = Field(
         None,
+        alias="externalOrderId",
         max_length=40,
         description="The ID of the external order that corresponds to the instantiation of the measurement concept.",
     )
@@ -121,6 +123,7 @@ class _MergeInstanceCharacteristic(MCMRequestModel):
     )
     model_entity_id: UUID | None = Field(
         None,
+        alias="modelEntityId",
         description="The universally unique identifier (UUID) of the model entity.",
     )
     entity_type_code: str | None = Field(
@@ -138,6 +141,7 @@ class _MergeInstanceCharacteristic(MCMRequestModel):
     )
     source_entity_id: UUID | None = Field(
         None,
+        alias="sourceEntityId",
         description="The universally unique identifier (UUID) of the source entity.",
     )
     source_id_text: str | None = Field(
@@ -180,6 +184,7 @@ class _MergeChangeProcess(MCMRequestModel):
 
     external_order_id: str | None = Field(
         None,
+        alias="externalOrderId",
         max_length=40,
         description="The ID of the external order that corresponds to the instantiation of the measurement concept.",
     )
@@ -234,6 +239,7 @@ class _ShutdownChangeProcess(MCMRequestModel):
 
     external_order_id: str | None = Field(
         None,
+        alias="externalOrderId",
         max_length=40,
         description="The ID of the external order that corresponds to the instantiation of the measurement concept.",
     )

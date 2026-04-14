@@ -93,19 +93,28 @@ class Address(MCMBaseModel):
         description="The code representing the country/region in which the measurement concept is instantiated.",
     )
     city_id: str | None = Field(
-        None, max_length=12, description="The city ID for which the measurement concept is instantiated."
+        None,
+        alias="cityID",
+        max_length=12,
+        description="The city ID for which the measurement concept is instantiated.",
     )
     city_name: str | None = Field(
         None, max_length=40, description="The name of the city for which the measurement concept is instantiated."
     )
     postal_code: str | None = Field(
-        None, max_length=10, description="The postal code for which the measurement concept is instantiated."
+        None,
+        alias="postalCode",
+        max_length=10,
+        description="The postal code for which the measurement concept is instantiated.",
     )
     city_district: str | None = Field(
         None, max_length=40, description="The city district in which the address object resides."
     )
     street_id: str | None = Field(
-        None, max_length=12, description="The street ID for which the measurement concept is instantiated."
+        None,
+        alias="streetID",
+        max_length=12,
+        description="The street ID for which the measurement concept is instantiated.",
     )
     street_name: str | None = Field(
         None, max_length=60, description="The name of the street on which the measurement concept is instantiated."
