@@ -1,0 +1,45 @@
+{
+  "@odata.count": 2,
+  "value": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "idText": "INST-79",
+      "version": "1",
+      "idTextVersion": "INST-79/1",
+      "description": "Instance Electricity Purchase - Standard - Creation process - Step by Step",
+      "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
+      "measurementClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "leadingGrid_code": "SNE956610053427",
+      "division_code": "EL",
+      "orderer_code": "SP_DIST",
+      "overallStatus_code": "ACTIVE",
+      "instanceStatus_code": "ACTIVE",
+      "processStatus_code": "COMPLETED",
+      "installedOn": "2024-03-15",
+      "installedUntil": "9999-12-31",
+      "commercialSetupOn": "2024-03-20",
+      "createdAt": "2024-03-10T08:30:00Z",
+      "modifiedAt": "2024-03-20T14:22:17Z"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "idText": "INST-80",
+      "version": "1",
+      "idTextVersion": "INST-80/1",
+      "description": "Instance Gas Purchase - RLM - Standard setup",
+      "measurementModel_id": "ffffffff-3333-3333-3333-200000000001",
+      "measurementClass_id": "cccccccc-4444-5555-6666-777788889999",
+      "leadingGrid_code": "GAS123456789012",
+      "division_code": "GA",
+      "orderer_code": "1234",
+      "overallStatus_code": "NEW",
+      "instanceStatus_code": "INITIAL",
+      "processStatus_code": "CREATE",
+      "installedOn": null,
+      "installedUntil": "9999-12-31",
+      "commercialSetupOn": null,
+      "createdAt": "2024-04-01T10:15:00Z",
+      "modifiedAt": "2024-04-01T10:15:00Z"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "@context": "$metadata#MeasurementConceptModels(*,conceptType(),measurementClass(),status(),division(),modelOperands(),marketLocations(calculationRules(usages()),actorsMapping()),meteringLocationPurposes())",
+  "@metadataEtag": "W/\"1ecd0410052abb5c38517692cf51d32a37f8ba3546a612c9c677143977568124\"",
+  "id": "ffffffff-2222-2222-2222-100000000001",
+  "idText": "B_S_M1",
+  "name": "Standard electricity model",
+  "description": "Standard electricity model",
+  "externalCode": "986799345",
+  "conceptType_code": "MODEL",
+  "measurementClass_id": "cccccccc-3333-4444-5555-666677778888",
+  "status_code": "ACTIVE",
+  "validFrom": "2022-04-13",
+  "validTo": "9999-12-31",
+  "division_code": "EL",
+  "version": "1",
+  "createdAt": "2022-04-13T15:51:04Z",
+  "modifiedAt": "2022-04-13T16:51:04Z",
+  "createdBy": "john.smith@sap.com",
+  "modifiedBy": "john.smith@sap.com",
+  "IsActiveEntity": true,
+  "HasActiveEntity": false,
+  "conceptType": {
+    "name": "Model",
+    "descr": "Measurement Concept Model",
+    "code": "MODEL"
+  },
+  "measurementClass": {
+    "id": "cccccccc-3333-4444-5555-666677778888",
+    "idText": "P_S",
+    "name": "Feed-in with unmetered generating plant",
+    "description": "For mapping models for feed-in with unmetered generation plant",
+    "classType_code": "CLASS",
+    "division_code": "EL"
+  },
+  "status": {
+    "name": "Active",
+    "descr": "Active Measurement Concept",
+    "code": "ACTIVE"
+  },
+  "division": {
+    "name": "Electricity",
+    "descr": "Electricity Division",
+    "code": "EL"
+  },
+  "marketLocations": [
+    {
+      "id": "aaaaaaaa-2222-3333-1111-100000000001",
+      "measurementConceptModel_id": "ffffffff-2222-2222-2222-100000000001",
+      "idText": "MaLo_VB",
+      "externalCode": null,
+      "type_code": "SUPPLY",
+      "virtualMarketLocation": false,
+      "direction_code": "OUT",
+      "position": 1,
+      "actorsMapping": [
+        {
+          "id": "aaaaaaaa-3333-4444-5555-100000000001",
+          "marketLocation_id": "aaaaaaaa-2222-3333-1111-100000000001",
+          "actor_id": "88888888-aaaa-bbbb-cccc-000000000001",
+          "actorIdText": "VB1",
+          "actorDirection_code": "OUT",
+          "actorType_code": "CONSUMER",
+          "position": 1
+        }
+      ],
+      "calculationRules": [
+        {
+          "id": "ffff1111-2222-3333-1111-100000000001",
+          "marketLocation_id": "aaaaaaaa-2222-3333-1111-100000000001",
+          "meteringProcedure_code": "SLP",
+          "formula_id": "abcdef01-2345-6789-abcd-ef0123456789",
+          "registerCode": null,
+          "position": 1,
+          "usages": [
+            {
+              "id": "ffff2222-3333-4444-5555-100000000001",
+              "calculationRule_id": "ffff1111-2222-3333-1111-100000000001",
+              "usage_code": "GRIDUSE",
+              "position": 1
+            },
+            {
+              "id": "ffff2222-3333-4444-5555-100000000002",
+              "calculationRule_id": "ffff1111-2222-3333-1111-100000000001",
+              "usage_code": "OUBILL",
+              "position": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "modelOperands": [
+    {
+      "id": "dddd1111-2222-3333-4444-100000000001",
+      "measurementConceptModel_id": "ffffffff-2222-2222-2222-100000000001",
+      "operand": "Z1B",
+      "meteringTask_id": "bbb50001-5555-5555-5555-501010000001",
+      "meteringTaskType_code": "AE",
+      "meteringTaskDirection_code": "OUT",
+      "meteringLocationIdText": "Z1",
+      "position": 1
+    }
+  ],
+  "meteringLocationPurposes": [
+    {
+      "id": "eeee1111-2222-3333-4444-100000000001",
+      "measurementConceptModel_id": "ffffffff-2222-2222-2222-100000000001",
+      "meteringLocationType_code": "GRIDMES",
+      "meteringLocationIdText": "Z1",
+      "meteringLocation_id": "22222222-aaaa-bbbb-cccc-000000000001",
+      "purpose_code": "SC",
+      "position": 1
+    }
+  ]
+}

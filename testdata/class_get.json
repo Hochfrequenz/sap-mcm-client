@@ -1,0 +1,73 @@
+{
+  "@context": "$metadata#MeasurementConceptClasses(*,classType(),division(),meteringLocations(),actors())",
+  "@metadataEtag": "W/\"1ecd0410052abb5c38517692cf51d32a37f8ba3546a612c9c677143977568124\"",
+  "id": "cccccccc-3333-4444-5555-666677778888",
+  "idText": "P_S",
+  "name": "Feed-in with unmetered generating plant",
+  "description": "For mapping models for feed-in with unmetered generation plant",
+  "classType_code": "CLASS",
+  "version": "1",
+  "division_code": "EL",
+  "classType": {
+    "name": "Class",
+    "descr": "Measurement Concept Class",
+    "code": "CLASS"
+  },
+  "division": {
+    "name": "Electricity",
+    "descr": "Electricity Division",
+    "code": "EL"
+  },
+  "meteringLocations": [
+    {
+      "id": "22222222-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "idText": "Z1",
+      "externalCode": null,
+      "type_code": "GRIDMES",
+      "description": "Grid measurement point",
+      "optional": false,
+      "repeatable": false,
+      "position": 1
+    },
+    {
+      "id": "22222222-aaaa-bbbb-cccc-000000000002",
+      "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "idText": "Z2",
+      "externalCode": null,
+      "type_code": "GENERATORMES",
+      "description": "Generator measurement point",
+      "optional": true,
+      "repeatable": false,
+      "position": 2
+    }
+  ],
+  "actors": [
+    {
+      "id": "88888888-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "idText": "VB1",
+      "externalCode": null,
+      "type_code": "CONSUMER",
+      "optional": false,
+      "repeatable": false,
+      "direction_code": "OUT",
+      "position": 1,
+      "energySource_code": null,
+      "powerRange_code": null
+    },
+    {
+      "id": "88888888-aaaa-bbbb-cccc-000000000002",
+      "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "idText": "ER1",
+      "externalCode": null,
+      "type_code": "PRODUCER",
+      "optional": true,
+      "repeatable": false,
+      "direction_code": "IN",
+      "position": 2,
+      "energySource_code": "SOLAR",
+      "powerRange_code": null
+    }
+  ]
+}
