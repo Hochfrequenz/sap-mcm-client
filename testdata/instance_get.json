@@ -1,0 +1,281 @@
+{
+  "@context": "$metadata#MCMInstances(meteringLocations(meteringTasks()),marketLocations(calculationRules(steps(meteringTask(meteringLocation())),usages())),operandMappings(),actors(),addresses(),changeProcesses(processData(meteringLocationsPD(meteringTasksPD()),marketLocationsPD(),actorsPD(externalReferences())),instanceCharacteristics()))/$entity",
+  "@metadataEtag": "W/\"1ecd0410052abb5c38517692cf51d32a37f8ba3546a612c9c677143977568124\"",
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "idText": "INST-79",
+  "version": "1",
+  "idTextVersion": "INST-79/1",
+  "predecessor_id": null,
+  "description": "Instance Electricity Purchase - Standard - Creation process - Step by Step",
+  "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
+  "measurementClass_id": "cccccccc-3333-4444-5555-666677778888",
+  "leadingGrid_code": "SNE956610053427",
+  "division_code": "EL",
+  "orderer_code": "SP_DIST",
+  "leadingAddress_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+  "overallStatus_code": "ACTIVE",
+  "status_id": "eeeeeeee-4444-5555-6666-777788889999",
+  "instanceStatus_code": "ACTIVE",
+  "processStatus_code": "COMPLETED",
+  "installedOn": "2024-03-15",
+  "installedUntil": "9999-12-31",
+  "commercialSetupOn": "2024-03-20",
+  "physicalShutdownOn": null,
+  "commercialShutdownOn": null,
+  "deviceInstallationsReady": true,
+  "marketLocationsComplete": true,
+  "createdAt": "2024-03-10T08:30:00Z",
+  "createdBy": "john.smith@example.com",
+  "modifiedAt": "2024-03-20T14:22:17Z",
+  "modifiedBy": "jane.doe@example.com",
+  "meteringLocations": [
+    {
+      "id": "11111111-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "idText": "Z1",
+      "type_code": "GRIDMES",
+      "position": 1,
+      "modelMeteringLocation_id": "22222222-aaaa-bbbb-cccc-000000000001",
+      "meteringLocationId": "DE0001234567890000000000000012345",
+      "grid_code": "SNE956610053427",
+      "gridLevel_code": "MV",
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "lossTransformerSupply": "0",
+      "lossLineSupply": "0",
+      "lossTransformerDemand": "0",
+      "lossLineDemand": "0",
+      "meteringLocationPurpose_code": null,
+      "disconnectable": false,
+      "transformerRequired": false,
+      "deviceSerialId": "SER-9876543210",
+      "removalDate": null,
+      "locationRemoved": false,
+      "installationDate": "2024-03-15",
+      "locationInstalled": true,
+      "meteringTasks": [
+        {
+          "id": "33333333-aaaa-bbbb-cccc-000000000001",
+          "meteringLocation_id": "11111111-aaaa-bbbb-cccc-000000000001",
+          "direction_code": "OUT",
+          "lossFactorTransformer": "1",
+          "lossFactorLine": "1",
+          "type_code": "AE",
+          "position": 1,
+          "modelMeteringTasks_id": "bbb50001-5555-5555-5555-501010000001",
+          "plannedMeteringProcedure_code": "SLP",
+          "plannedRegisterCode": "1.8.x",
+          "registerCode": "1.8.0"
+        },
+        {
+          "id": "33333333-aaaa-bbbb-cccc-000000000002",
+          "meteringLocation_id": "11111111-aaaa-bbbb-cccc-000000000001",
+          "direction_code": "IN",
+          "lossFactorTransformer": "1",
+          "lossFactorLine": "1",
+          "type_code": "AE",
+          "position": 2,
+          "modelMeteringTasks_id": "bbb50001-5555-5555-5555-501010000002",
+          "plannedMeteringProcedure_code": "SLP",
+          "plannedRegisterCode": "2.8.x",
+          "registerCode": "2.8.0"
+        }
+      ]
+    }
+  ],
+  "marketLocations": [
+    {
+      "id": "44444444-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "idText": "Malo VB",
+      "type_code": "SUPPLY",
+      "direction_code": "OUT",
+      "position": 1,
+      "modelMarketLocation_id": "aaaaaaaa-2222-3333-1111-100000000001",
+      "marketLocationId": "51111111111",
+      "virtualMarketLocation": false,
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "billingProcedure": "SLP",
+      "settlementProcedure": "SLP",
+      "removalDate": null,
+      "locationRemoved": false,
+      "commercialSetupDate": "2024-03-20",
+      "locationComplete": true,
+      "calculationRules": [
+        {
+          "id": "55555555-aaaa-bbbb-cccc-000000000001",
+          "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+          "meteringProcedure_code": "SLP",
+          "modelCalculationRule_id": "ffff1111-2222-3333-1111-100000000001",
+          "expression": "Z1B",
+          "expressionExpanded": "Z1B{1,1}",
+          "plannedRegisterCode": "1.8.x",
+          "registerCode": null,
+          "position": 1,
+          "steps": [
+            {
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "step": 0,
+              "type": "var",
+              "value": "Z1.OUT",
+              "ref1": null,
+              "ref2": null,
+              "meteringTask_id": "33333333-aaaa-bbbb-cccc-000000000001"
+            }
+          ],
+          "usages": [
+            {
+              "id": "66666666-aaaa-bbbb-cccc-000000000001",
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "usage_code": "GRIDUSE",
+              "position": 1
+            },
+            {
+              "id": "66666666-aaaa-bbbb-cccc-000000000002",
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "usage_code": "OUBILL",
+              "position": 2
+            },
+            {
+              "id": "66666666-aaaa-bbbb-cccc-000000000003",
+              "calculationRule_id": "55555555-aaaa-bbbb-cccc-000000000001",
+              "usage_code": "SETTLE",
+              "position": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actors": [
+    {
+      "id": "77777777-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "idText": "VB",
+      "type_code": "CONSUMER",
+      "direction_code": "OUT",
+      "position": 1,
+      "modelActor_id": "88888888-aaaa-bbbb-cccc-000000000001",
+      "powerRange_code": null,
+      "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+      "energySource_code": null,
+      "address_id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "gridLevel_code": null,
+      "isOwnConsumption": false
+    }
+  ],
+  "addresses": [
+    {
+      "id": "dddddddd-aaaa-bbbb-cccc-111122223333",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "country_code": "DE",
+      "cityID": "WALLDORF",
+      "cityName": "Walldorf",
+      "postalCode": "69190",
+      "streetID": "RINGSTRASSE",
+      "streetName": "Ringstrasse",
+      "houseNumber": "981",
+      "floorNumber": "5",
+      "supplement": "5.Stock App 67",
+      "houseNumberSupplement": null,
+      "latitude": "49.30637000",
+      "longitude": "8.64236000",
+      "cityDistrict": null,
+      "timeZone": "CEST"
+    }
+  ],
+  "operandMappings": [
+    {
+      "id": "99999999-aaaa-bbbb-cccc-000000000001",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "operand": "Z1B",
+      "meteringTask_id": "33333333-aaaa-bbbb-cccc-000000000001",
+      "position": 1
+    }
+  ],
+  "changeProcesses": [
+    {
+      "id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+      "measurementConceptInstance_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "externalOrderId": "4711",
+      "externalProcessId": null,
+      "processType_code": "CREATE",
+      "status_id": "eeeeeeee-4444-5555-6666-777788889999",
+      "finished": true,
+      "modifiedAt": "2024-03-20T14:22:17Z",
+      "processData": {
+        "id": "bbbbbbbb-cccc-dddd-eeee-000000000001",
+        "changeProcess_id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "subscriberId": null,
+        "leadingConnectionUser": "0815",
+        "leadingConnectionOwner": "0815",
+        "note": "Standard electricity purchase instance for residential customer",
+        "initialDataEntryReady": true,
+        "locationIdentifiersReady": true,
+        "finalDataEntryReady": true,
+        "masterDataReady": true,
+        "deviceInstallationsReady": true,
+        "marketLocationsComplete": true,
+        "meteringLocationsPD": [
+          {
+            "id": "cccccccc-dddd-eeee-ffff-000000000001",
+            "measurementConceptInstancePD_id": "bbbbbbbb-cccc-dddd-eeee-000000000001",
+            "meteringLocation_id": "11111111-aaaa-bbbb-cccc-000000000001",
+            "position": 1,
+            "plannedMeteringLocationId": null,
+            "deviceLocationSupplement": null,
+            "meterOperator": null,
+            "note": null,
+            "classification": null,
+            "measuringType_code": null,
+            "volumeCorrector": false,
+            "nominalCapacity": null,
+            "locationIdentifierReady": true,
+            "masterDataReady": true
+          }
+        ],
+        "marketLocationsPD": [
+          {
+            "id": "cccccccc-dddd-eeee-ffff-000000000002",
+            "measurementConceptInstancePD_id": "bbbbbbbb-cccc-dddd-eeee-000000000001",
+            "marketLocation_id": "44444444-aaaa-bbbb-cccc-000000000001",
+            "position": 1
+          }
+        ],
+        "actorsPD": [
+          {
+            "id": "cccccccc-dddd-eeee-ffff-000000000003",
+            "measurementConceptInstancePD_id": "bbbbbbbb-cccc-dddd-eeee-000000000001",
+            "actor_id": "77777777-aaaa-bbbb-cccc-000000000001",
+            "position": 1
+          }
+        ]
+      },
+      "instanceCharacteristics": [
+        {
+          "id": "dddddddd-eeee-ffff-0000-000000000001",
+          "changeProcess_id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "entityType_code": "MCIMeteringTask",
+          "modelEntityId": "bbb50001-5555-5555-5555-501010000001",
+          "characteristic_code": "selectPlannedMeteringProcedure",
+          "value": "SLP"
+        },
+        {
+          "id": "dddddddd-eeee-ffff-0000-000000000002",
+          "changeProcess_id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "entityType_code": "MCICalculationRules",
+          "modelEntityId": "ffff1111-2222-3333-1111-100000000001",
+          "characteristic_code": "selectMarketLocationUsageType",
+          "value": "GRIDUSE"
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "id": "eeeeeeee-4444-5555-6666-777788889999",
+      "changeProcess_id": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+      "instanceStatus_code": "ACTIVE",
+      "processStatus_code": "COMPLETED"
+    }
+  ]
+}

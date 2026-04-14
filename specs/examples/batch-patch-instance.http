@@ -1,0 +1,36 @@
+POST http://localhost:8080/odata/v4/api/mcm/v1/$batch HTTP/1.1
+content-type: text/plain
+content-type: multipart/mixed; boundary=batch_id-1
+
+--batch_id-1
+Content-Type:application/http
+Content-Transfer-Encoding:binary
+
+PATCH MCMInstances({{instanceId}}) HTTP/1.1
+Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
+Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+
+{"leadingAddress_id":"{{addressId-1}}"}
+--batch_id-1
+Content-Type:application/http
+Content-Transfer-Encoding:binary
+
+PATCH MCMInstances({{instanceId}})/meteringLocations({{meloId-1}}) HTTP/1.1
+Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
+Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+
+{"address_id":"{{addressId-1}}"}
+
+
+--batch_id-1
+Content-Type:application/http
+Content-Transfer-Encoding:binary
+
+PATCH MCMInstances({{instanceId}})/marketLocations({{maloId-1}}) HTTP/1.1
+Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
+Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+
+{"address_id":"{{addressId-1}}"}
+
+
+--batch_id-1--

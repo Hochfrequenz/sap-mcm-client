@@ -1,0 +1,1738 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Measurement Concept Model",
+    "description": "The Measurement Concept Model API enables you to retrieve models of measurement concepts. The model of a measurement concept defines the commercial structure.",
+    "version": "1.1.0",
+    "termsOfService": "https://www.sap.com/about/agreements/cloud-services.html?tag=language:english&search=Supplement&sort=title_asc&source=social-atw-mailto#pdf-asset=f4ccdd0a-107d-0010-87a3-c30de2ffd8ff&page=1"
+  },
+  "externalDocs": {
+    "description": "API Guide of the Measurement Concept Management Component",
+    "url": "https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/39d2b485b52c425ba1c5f1121362f239.html?locale=en-US&version=Cloud"
+  },
+  "servers": [
+    {
+      "url": "https://c4u-foundation-mcm-service.cfapps.eu10.hana.ondemand.com",
+      "description": "Measurement Concept Model API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Measurement Concept Model"
+    }
+  ],
+  "paths": {
+    "/odata/v4/api/mcm/v1/MeasurementConceptModels": {
+      "get": {
+        "summary": "Retrieves measurement concept models.",
+        "description": "This operation retrieves a list of the measurement concept models that exist in the measurement concept management component of SAP Cloud for Utilities foundation.",
+        "tags": [
+          "Measurement Concept Model"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "id desc",
+                  "validFrom",
+                  "validFrom desc",
+                  "validTo",
+                  "validTo desc",
+                  "idText",
+                  "idText desc",
+                  "name",
+                  "name desc",
+                  "description",
+                  "description desc",
+                  "conceptType_code",
+                  "conceptType_code desc",
+                  "measurementClass_id",
+                  "measurementClass_id desc",
+                  "status_code",
+                  "status_code desc",
+                  "division_code",
+                  "division_code desc",
+                  "createdAt",
+                  "createdAt desc",
+                  "modifiedAt",
+                  "modifiedAt desc",
+                  "createdBy",
+                  "createdBy desc",
+                  "modifiedBy",
+                  "modifiedBy desc",
+                  "IsActiveEntity",
+                  "IsActiveEntity desc",
+                  "HasActiveEntity",
+                  "HasActiveEntity desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "validFrom",
+                  "validTo",
+                  "idText",
+                  "name",
+                  "description",
+                  "conceptType_code",
+                  "measurementClass_id",
+                  "status_code",
+                  "division_code",
+                  "createdAt",
+                  "modifiedAt",
+                  "createdBy",
+                  "modifiedBy",
+                  "IsActiveEntity",
+                  "HasActiveEntity"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "Expand related entities, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "conceptType",
+                  "measurementClass",
+                  "status",
+                  "division",
+                  "modelOperands",
+                  "marketLocations",
+                  "meteringLocationPurposes"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved measurement concept models.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of MeasurementConceptModels",
+                  "properties": {
+                    "@odata.count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/mcmModels.MeasurementConceptModels"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. There is a problem with your access token. Generate a new JSON Web Token (JWT) as described in the [Administration Guide]( https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/416202c8d4a449dbae5ac7cdfe40f3c3.html?locale=en-US&version=Cloud)."
+          },
+            "403": {
+              "description": "Forbidden. Access denied.",
+              "content": {
+                "application/json": {
+                    "schema": {
+                        "example": {
+                            "error": {
+                            "code": "403001",
+                            "message": "Not authorized to send event 'READ' to 'MCMService'"
+                            }
+                        }
+                    }
+                }
+            }
+          }
+        }
+      }
+    },
+    "/odata/v4/api/mcm/v1/MeasurementConceptModels({id})": {
+      "parameters": [
+        {
+          "description": "The universally unique identifier (UUID) of the measurement concept model",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a measurement concept model.",
+        "description": "This operation retrieves a measurement concept model using the ID of the model that exists in the measurement concept management component of SAP Cloud for Utilities foundation.",
+        "tags": [
+          "Measurement Concept Model"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "validFrom",
+                  "validTo",
+                  "idText",
+                  "name",
+                  "description",
+                  "conceptType_code",
+                  "measurementClass_id",
+                  "status_code",
+                  "division_code",
+                  "createdAt",
+                  "modifiedAt",
+                  "createdBy",
+                  "modifiedBy",
+                  "IsActiveEntity",
+                  "HasActiveEntity"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "Expand related entities, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "conceptType",
+                  "measurementClass",
+                  "status",
+                  "division",
+                  "modelOperands",
+                  "marketLocations",
+                  "meteringLocationPurposes"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved measurement concept model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmModels.MeasurementConceptModels"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. There is a problem with your access token. Generate a new JSON Web Token (JWT) as described in the [Administration Guide]( https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/416202c8d4a449dbae5ac7cdfe40f3c3.html?locale=en-US&version=Cloud)."
+          },
+            "403": {
+              "description": "Forbidden. Access denied.",
+              "content": {
+                "application/json": {
+                    "schema": {
+                        "example": {
+                            "error": {
+                            "code": "403001",
+                            "message": "Not authorized to send event 'READ' to 'MCMService'"
+                            }
+                        }
+                    }
+                }
+            }
+          },
+          "404": {
+            "description": "The measurement concept model was not found.",
+            "content": {
+              "application/json": {
+                  "schema": {
+                      "example": {
+                          "error": {
+                          "code": "404009",
+                          "message": "Entity 'MCMService.MeasurementConceptModels' with key(s) 'id=01234567-89ab-cdef-0123-456789abcdef' not found"
+                          }
+                      }
+                  }
+              }
+          }
+        }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "mcmModels.MeasurementConceptModels": {
+        "title": "MeasurementConceptModels",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the measurement concept model."
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-04-13T16:51:04Z",
+            "nullable": true,
+            "description": "The date and time at which the measurement concept model was last modified."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-04-13T15:51:04Z",
+            "nullable": true,
+            "description": "The date and time at which the measurement concept model was created."
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the measurement concept model.",
+            "example": "B_S_M1"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "The brief description of the measurement concept model.",
+            "example": "Standard electricity model"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "The long description of the measurement concept model.",
+            "example": "Standard electricity model"
+          },
+          "externalCode": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true,
+            "example": "986799345",
+            "description": "The external code."
+          },
+          "conceptType_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "example": "SAPTEMPLATE",
+            "default": "MODEL",
+            "description": "The code representing the model type of the measurement concept model. The supported types are ```MODEL``` (model) and ```SAPTEMPLATE``` (SAP template). Models of the SAP template type can be used only as a basis for models of the model type, which can be used in production."
+          },
+          "measurementClass_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the measurement concept class."
+          },
+          "status_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "example": "ACTIVE",
+            "default": "IN_PROGRESS",
+            "description": "The code representing the status of the measurement concept model. The supported status are ```IN_PROGRESS``` (in progress), ```ACTIVE``` (active), and ```DEACTIVATED``` (deactivated)."
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2022-04-13",
+            "nullable": true,
+            "description": "The starting date of the validity period of the measurement concept model."
+          },
+          "validTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-04-13",
+            "nullable": true,
+            "default": "9999-12-31",
+            "description": "The ending date of the validity period of the measurement concept model."
+          },
+          "division_code": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true,
+            "example": "EL",
+            "description": "The code representing the division of the measurement concept model. The supported divisions are ```EL``` (electricity), ```GA``` (gas), ```WA``` (water), and ```RH``` (remote heat)."
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true,
+            "default": "1",
+            "description": "The version of the measurement concept model."
+          },
+          "conceptType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCDModelTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "measurementClass": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MeasurementConceptClasses"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCDStatusTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "division": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.DivisionTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "marketLocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDMarketLocations"
+            }
+          },
+          "modelOperands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDOperandMappings"
+            }
+          },
+          "meteringLocationPurposes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDMeteringLocationPurposes"
+            }
+          }
+        },
+        "description": "Measurement Concept Model"
+      },
+      "mcmModels.MCDModelTypes": {
+        "title": "MCDModelTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the type of a measurement concept model."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the type of a measurement concept model."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "default": "MODEL",
+            "description": "The code representing the model type of the measurement concept model. The supported types are ```MODEL``` (model) and ```SAPTEMPLATE``` (SAP template). Models of the SAP template type can be used only as a basis for models of the model type, which can be used in production."
+          }
+        },
+        "description": "Types of measurement concept models"
+      },
+      "mcmModels.MeasurementConceptClasses": {
+        "title": "MeasurementConceptClasses",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the measurement concept class."
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 32,
+            "example": "P_S",
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the measurement concept class."
+          },
+          "name": {
+            "type": "string",
+            "example": "Feed-in with unmetered generating plant",
+            "nullable": true,
+            "description": "The brief description of the measurement concept class."
+          },
+          "description": {
+            "type": "string",
+            "example": "For mapping models for feed-in with unmetered generation plant",
+            "nullable": true,
+            "description": "The long description of the measurement concept class."
+          },
+          "classType_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "example": "SAP Template",
+            "default": "CLASS",
+            "description": "The code representing the class type of the measurement concept class. The supported types are ```CLASS``` (class) and ```SAPTEMPLATE``` (SAP template). Classes of the SAP template type can be used only as a basis for classes of the class type, which can be used in production."
+          },
+          "division_code": {
+            "type": "string",
+            "maxLength": 2,
+            "example": "EL",
+            "nullable": true,
+            "description": "The code representing the division of the measurement concept class. The supported divisions are ```EL``` (electricity), ```GA``` (gas), ```WA``` (water), and ```RH``` (remote heat)."
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true,
+            "default": "1",
+            "description": "The version of the measurement concept class."
+          },
+          "classType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCClassTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "division": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.DivisionTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "meteringLocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCCMeteringLocations"
+            }
+          },
+          "actors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCCActors"
+            }
+          }
+        },
+        "description": "Measurement Concept Class"
+      },
+      "mcmModels.MCDStatusTypes": {
+        "title": "MCDStatusTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "example": "Active",
+            "description": "The brief description of the status type of a measurement concept model."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "example": "Active Measurement Concept",
+            "description": "The long description of the status type of a measurement concept model."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "ACTIVE",
+            "default": "IN_PROGRESS",
+            "description": "The code for the status type of a measurement concept model. A model can have the status ```IN_PROGRESS``` (in progress), ```ACTIVE``` (active), or ```DEACTIVATED``` (deactivated)."
+          }
+        },
+        "description": "Statuses of measurement concept models"
+      },
+      "mcmModels.DivisionTypes": {
+        "title": "DivisionTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Electricity",
+            "nullable": true,
+            "description": "The short description of the division type of a measurement concept class."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "example": "Electricity Division",
+            "nullable": true,
+            "description": "The long description of the division type of a measurement concept class."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 2,
+            "example": "EL",
+            "description": "The code representing the division of the measurement concept model. The supported divisions are ```EL``` (electricity), ```GA``` (gas), ```WA``` (water), and ```RH``` (remote heat)."
+          }
+        },
+        "description": "Division types of measurement concept models"
+      },
+      "mcmModels.MCDMarketLocations": {
+        "title": "MCDMarketLocations",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the market location."
+          },
+          "measurementConceptModel_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the measurement concept model to which the market location corresponds."              
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the market location."
+          },
+          "externalCode": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true,
+            "example": "986799345",
+            "description": "The external code."
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MarketLocationTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "type_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code for a type of market location."
+          },
+          "virtualMarketLocation": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether the market location is virtual."
+          },
+          "actorsMapping": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDMarketLocationActors"
+            }
+          },
+          "actorsMapping@odata.count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "calculationRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDCalculationRules"
+            }
+          },
+          "calculationRules@odata.count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.DirectionTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "direction_code": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true,
+            "description": "The code representing the direction of the market location. The supported directions for the electricity division type are ```IN``` (supply) and ```OUT``` (demand). The supported direction for the gas, water, and remote heat division types is ```OUT``` (demand)."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the market location."
+          }
+        },
+        "description": "Market locations of measurement concept models"
+      },
+      "mcmModels.MCDOperandMappings": {
+        "title": "MCDOperandMappings",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the operand mapping."
+          },
+          "measurementConceptModel_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the measurement concept model to which the operand mapping corresponds."
+          },
+          "operand": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The variables of a formula that are mapped to metering tasks."
+          },
+          "meteringTask": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCCMeteringTasks"
+              }
+            ],
+            "nullable": true
+          },
+          "meteringTask_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the metering task."
+          },
+          "meteringTaskType_code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "AE",
+            "nullable": true,
+            "description": "The code representing the type of metering task."
+          },
+          "meteringTaskDirection_code": {
+            "type": "string",
+            "maxLength": 4,
+            "example": "OUT",
+            "nullable": true
+          },
+          "meteringLocationIdText": {
+            "type": "string",
+            "maxLength": 16,
+            "example": "Z1",
+            "description": "The text describing the universally unique identifier (UUID) of the metering location."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the operand mapping."
+          }
+        },
+        "description": "Mapping of formula operands to metering locations"
+      },
+      "mcmModels.MCDMeteringLocationPurposes": {
+        "title": "MCDMeteringLocationPurposes",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering location purpose."
+          },
+          "measurementConceptModel_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the measurement concept model to which the metering location purpose corresponds."
+          },
+          "meteringLocationType_code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "AE",
+            "nullable": true,
+            "description": "The code representing the type of metering Location."
+          },
+          "meteringLocationIdText": {
+            "type": "string",
+            "maxLength": 16,
+            "example": "Z1",
+            "description": "The text describing the universally unique identifier (UUID) of the metering location."
+          },
+          "meteringLocation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCCMeteringLocations"
+              }
+            ],
+            "nullable": true
+          },
+          "meteringLocation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the metering location."
+          },
+          "purpose": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCDMeteringLocationPurposeTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "purpose_code": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true,
+            "default": "SC",
+            "description": "The code of the metering location purpose. The purposes ```SC``` (self-consumption) and ```CST``` (commercial settlement transfer) are supported."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the metering location purpose."
+          }
+        },
+        "description": "Purposes of metering locations"
+      },
+      "mcmModels.MCCMeteringLocations": {
+        "title": "MCCMeteringLocations",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering location."
+          },
+          "measurementConceptClass_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the measurement concept class to which the metering location is assigned."
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "Z1",
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the metering location."
+          },
+          "externalCode": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true,
+            "example": "986799345",
+            "description": "The external code."
+          },
+          "type_code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "GRIDMES",
+            "nullable": true,
+            "description": "The code representing the type of metering location. The supported types are ```GRIDMES``` (grid measurement), ```SERIESMES``` (serial switching measurement), ```GENERATORMES``` (generator measurement), ```STORAGEMES``` (storage measurement), ```DIFFMES``` (difference measurement), and ```COMPAREMES``` (comparative measurement)."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "The description of the metering location."
+          },
+          "optional": {
+            "type": "boolean",
+            "example": false,
+            "nullable": true,
+            "description": "Indicates whether the metering location is optional within a circuit plan."
+          },
+          "repeatable": {
+            "type": "boolean",
+            "example": false,
+            "nullable": true,
+            "description": "Indicates whether copies of the metering location or metering location bundle can be created during the instantiation of measurement concepts."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the metering location."
+          }
+        },
+        "description": "Metering locations of measurement concept models"
+      },
+      "mcmModels.MCCActors": {
+        "title": "MCCActors",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the actor."
+          },
+          "measurementConceptClass_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the measurement concept class to which the actor is assigned."
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "VB1",
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the actor."
+          },
+          "externalCode": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true,
+            "example": "986799345",
+            "description": "The external code."
+          },
+          "type_code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "CONSUMER",
+            "nullable": true,
+            "description": "The code representing the type of actor."
+          },
+          "optional": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether the actor is optional within a circuit plan."
+          },
+          "repeatable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether copies of the actor can be created during the instantiation of measurement concepts."
+          },
+          "direction_code": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true,
+            "description": "The code representing the direction of the actor. The supported directions for the electricity division type are ```IN``` (supply) and ```OUT``` (demand). The supported direction for the gas, water, and remote heat division types is ```OUT``` (demand)."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the metering location."
+          },
+          "energySource_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code representing the energy source of an actor. All actors belonging to the same metering location must have the same energy source. For information about the supported energy sources and their codes, refer to [MCIActors]( https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/da4327d2df4d4bdf9082b4c2e699ca85.html?locale=en-US&version=Cloud)."
+          },
+          "powerRange_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code representing the power range of an actor."
+          }
+        },
+        "description": "Actors of measurement concept models"
+      },
+      "mcmModels.MarketLocationTypes": {
+        "title": "MarketLocationTypes",
+        "type": "object",
+        "properties": {
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-04-13T16:51:04Z",
+            "nullable": true,
+            "description": "The date and time at which the market location type was last modified."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-04-13T15:51:04Z",
+            "nullable": true,
+            "description": "The date and time at which the market location type was created."
+          },
+          "createdBy": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The user who created the market location type.",
+            "example": "john.smith@sap.com"
+          },
+          "modifiedBy": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The user who last modified the market location type.",
+            "example": "john.smith@sap.com"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the market location type of a measurement concept model."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "description": "The code for the market location type of a measurement concept model."
+          },
+         "basicType_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "SUPPLY"
+          },
+         "relType_code": {
+            "type": "string",
+            "nullable": true
+          },
+         "relSubType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true,
+            "default": "1"
+          }
+        },
+        "description": "Types of market location"
+      },
+      "mcmModels.MCDMarketLocationActors": {
+        "title": "MCDMarketLocationActors",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the actor."
+          },
+          "marketLocation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the market location."
+          },
+          "actor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCCActors"
+              }
+            ],
+            "nullable": true
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the actor."
+          },
+          "actorIdText": {
+            "type": "string",
+            "maxLength": 16,
+            "example": "C1",
+            "description": "The text describing the universally unique identifier (UUID) of the actor."
+          },
+          "actorDirection_code": {
+            "type": "string",
+            "maxLength": 4,
+            "example": "OUT",
+            "nullable": true,
+            "description": "The code for the direction of the actor."
+          },
+          "actorType_code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "CONSUMER",
+            "nullable": true,
+            "description": "The type code of the actor."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the actor."
+          }
+        },
+        "description": "Actors of a market location"
+      },
+      "mcmModels.MCDCalculationRules": {
+        "title": "MCDCalculationRules",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the calculation rule."
+          },
+          "marketLocation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the market location."
+          },
+          "meteringProcedure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MeteringProcedureTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "meteringProcedure_code": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true,
+            "description": "The code representing the metering procedure of a metering task. The metering procedures ```RLM``` (interval reading) and ```SLP``` (standard load profile) are supported."
+          },
+          "formula": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCMFormulas"
+              }
+            ],
+            "nullable": true
+          },
+          "formula_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the formula."
+          },
+          "registerCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to [MCIMeteringTasks](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/c8dc190d6f0b44019b46054c4f34bb3e.html?locale=en-US&version=Cloud)."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the calculation rule."
+          },
+          "usages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCDMarketLocationUsages"
+            }
+          },
+          "usages@odata.count": {
+            "$ref": "#/components/schemas/count"
+          }
+        },
+        "description": "Calculation rules that map formulas to market locations"
+      },
+      "mcmModels.DirectionTypes": {
+        "title": "DirectionTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the direction type."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the direction type."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 4,
+            "description": "The code representing the direction type. The supported directions for the electricity division type are ```IN``` (supply) and ```OUT``` (demand). The supported direction for the gas, water, and remote heat division types is ```OUT``` (demand)."
+          }
+        },
+        "description": "Types of directions"
+      },
+      "mcmModels.MCCMeteringTasks": {
+        "title": "MCCMeteringTasks",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering task."
+          },
+          "meteringLocation": {
+            "$ref": "#/components/schemas/mcmModels.MCCMeteringLocations"
+          },
+          "meteringLocation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering location to which the metering task is assigned. "
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MeteringTaskTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "type_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code representing the metering task type. The supported types are ```AE``` (active energy), ```OV``` (operating volume), and ```EV``` (energetic value). For division-specific information about these types, refer to [MCIMeteringTasks](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/c8dc190d6f0b44019b46054c4f34bb3e.html?locale=en-US&version=Cloud)."
+          },
+          "meteringProcedures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/mcmModels.MCCMeteringProcedures"
+            }
+          },
+          "meteringProcedures@odata.count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.DirectionTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "direction_code": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true,
+            "description": "The direction of the metering task. The direction can be ```IN``` (energy that feeds into a grid) or ```OUT``` (energy that is consumed from a grid). The direction is derived from the measurement concept model."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the metering task."
+          }
+        },
+        "description": "Metering tasks of measurement concept models"
+      },
+      "mcmModels.MCCMeteringTasks-formulaSteps": {
+        "title": "MCCMeteringTasks",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering task."
+          },
+          "meteringLocation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering location to which the metering task is assigned. "
+          },
+          "type_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code representing the metering task type. The supported types are ```AE``` (active energy), ```OV``` (operating volume), and ```EV``` (energetic value). For division-specific information about these types, refer to [MCIMeteringTasks](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/c8dc190d6f0b44019b46054c4f34bb3e.html?locale=en-US&version=Cloud)."
+          },
+          "direction_code": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true,
+            "description": "The direction of the metering task. The direction can be ```IN``` (energy that feeds into a grid) or ```OUT``` (energy that is consumed from a grid). The direction is derived from the measurement concept model."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the metering task."
+          },
+          "meteringLocation": {
+            "$ref": "#/components/schemas/mcmModels.MCCMeteringLocations"
+          }
+        },
+        "description": "Metering tasks of measurement concept models"
+      },
+      "mcmModels.MCDMeteringLocationPurposeTypes": {
+        "title": "MCDMeteringLocationPurposeTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the type of metering location purpose."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the type of metering location purpose."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 3,
+            "default": "SC",
+            "description": "The code representing the type of metering location purpose. The purposes ```SC``` (self-consumption) and ```CST``` (commercial settlement transfer) are supported."
+          }
+        },
+        "description": "Types of metering location purposes"
+      },
+      "mcmModels.MeteringProcedureTypes": {
+        "title": "MeteringProcedureTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The short description of the metering procedure type."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the metering procedure type."
+          },
+          "descr_short": {
+            "type": "string",
+            "maxLength": 225,
+            "nullable": true,
+            "example": "RLM",
+            "description": "The short description of the metering procedure type."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 3,
+            "description": "The code for the metering procedure type. The supported codes are ```IR``` (interval reading) and ```SLP``` (standard load profile)."
+          }
+        },
+        "description": "Types of metering procedures"
+      },
+      "mcmModels.MCMFormulas": {
+        "title": "MCMFormulas",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the formula."
+          },
+          "idText": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true,
+            "description": "The text describing the universally unique identifier (UUID) of the formula."
+          },
+          "name": {
+            "type": "string",
+            "example": "AverageConsumptionFormula",
+            "description": "Technical name or identifier of the formula, typically used internally for referencing."
+          },
+          "description": {
+            "type": "string",
+            "example": "Calculates the average consumption over a 30-day period based on input readings.",
+            "description": "Detailed explanation of what the formula does, including its purpose or calculation logic if applicable."
+          },
+          "isNotUsable": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indicates whether the formula is currently unusable in processing logic."
+          },
+          "expression": {
+            "type": "string",
+            "nullable": true,
+            "description": "The condensed formula that expresses unsuppressed loss factors in a human-readable format. An expression does not contain loss functions."
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true,
+            "default": "1"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the formula."
+          },
+          "expressionSubstituted": {
+            "type": "string",
+            "nullable": true,
+            "description": "The substituted expression of the formula."
+          },
+         "formulaSteps": {
+            "type": "array",
+            "items": {
+            "$ref": "#/components/schemas/mcmModels.MCMFormulasSteps"
+            }
+          }
+        },
+        "description": "Formulas of measurement concept models"
+      },
+      "mcmModels.MCMFormulasSteps": {
+        "type": "object",
+        "properties": {
+          "formula_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "ff000000-0000-0000-0000-000000000001",
+            "description": "The universally unique identifier (UUID) of the formula."
+          },
+          "step": {
+            "type": "integer",
+            "example": 0
+          },
+          "type": {
+            "type": "string",
+            "example": "var",
+            "description": "The type of step (e.g., variable, operator)."
+          },
+          "value": {
+            "type": "string",
+            "example": "Z1.OUT",
+            "description": "The value used in this formula step."
+          },
+          "ref1": {
+            "type": "string",
+            "nullable": true
+          },
+          "ref2": {
+            "type": "string",
+            "nullable": true
+          },
+          "meteringTask_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the metering task."
+          },
+          "operand": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The variables of a formula that are mapped to metering tasks."
+          },
+          "meteringTask": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MCCMeteringTasks-formulaSteps"
+              }
+            ]
+          }
+  },
+  "description": "The steps involved in the formula calculation."
+      },
+      "mcmModels.MCDMarketLocationUsages": {
+        "title": "MCDMarketLocationUsages",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the usage."
+          },
+          "calculationRule_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true,
+            "description": "The universally unique identifier (UUID) of the calculation rule."
+          },
+          "usage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MarketLocationUsageTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "usage_code": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true,
+            "description": "The code representing the usage of the market location."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "The position of the usage."
+          }
+        },
+        "description": "Usages of formulas that are used in market locations"
+      },
+      "mcmModels.MarketLocationUsageTypes": {
+        "title": "MarketLocationUsageTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the types of market location usages."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the types of market location usages."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "description": "The code for usage type of a market location. The supported usage types are ```BILLING``` (billing), ```GRIDUSE``` (grid usage), ```OUBILL``` (overtake/undertake amounts), ```REB``` (renewable energy), and ```SETTLE``` (settlement)."
+          }
+        },
+        "description": "Types of market location usages"
+      },
+      "mcmModels.MCClassTypes": {
+        "title": "MCClassTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Template",
+            "nullable": true,
+            "description": "The brief description of the type of a measurement concept class."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "example": "SAP Template",
+            "nullable": true,
+            "description": "The long description of the type of a measurement concept class."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "example": "SAP Template",
+            "default": "CLASS",
+            "description": "The code representing the class type of the measurement concept class. The supported types are ```CLASS``` (class) and ```SAPTEMPLATE``` (SAP template). Classes of the SAP template type can be used only as a basis for classes of the class type, which can be used in production."
+          }
+        },
+        "description": "Types of measurement concept classes"
+      },
+      "mcmModels.MeteringTaskTypes": {
+        "title": "MeteringTaskTypes",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "The brief description of the metering task type."
+          },
+          "descr": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "The long description of the metering task type."
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 12,
+            "description": "The code representing the metering task type. The supported types are ```AE``` (active energy), ```OV``` (operating volume), and ```EV``` (energetic value). For division-specific information about these types, refer to [MCIMeteringTasks](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/c8dc190d6f0b44019b46054c4f34bb3e.html?locale=en-US&version=Cloud)."
+          },
+          "division": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.DivisionTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "division_code": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true,
+            "description": "The code representing the division of the metering task type. The division of the type is derived from the measurement concept class. The supported codes are ```EL``` (electricity), ```GA``` (gas), ```WA``` (water), and ```RH``` (remote heat)."
+          }
+        },
+        "description": "Types of metering tasks"
+      },
+      "mcmModels.MCCMeteringProcedures": {
+        "title": "MCCMeteringProcedures",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "description": "The universally unique identifier (UUID) of the metering procedure."
+          },
+          "meteringTask_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "meteringProcedure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/mcmModels.MeteringProcedureTypes"
+              }
+            ],
+            "nullable": true
+          },
+          "meteringProcedure_code": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true,
+            "description": "The code representing the metering procedure of a metering task. The metering procedures ```RLM``` (interval reading) and ```SLP``` (standard load profile) are supported."
+          },
+          "registerCode": {
+            "type": "string",
+            "nullable": true,
+            "example":"1.29.x",
+            "description": "The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to [MCIMeteringTasks](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/c8dc190d6f0b44019b46054c4f34bb3e.html?locale=en-US&version=Cloud)."
+          }
+        },
+        "description": "Metering procedures of measurement concept classes"
+      },
+      "count": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The number of entities in the collection. Available when using the [$count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount) query option."
+      }
+    },
+    "parameters": {
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Show only the first n items, see [Paging - Top](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptiontop)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "example": 50
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Skip the first n items, see [Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionskip)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items, see [Count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount)",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Search items by search phrases, see [Searching](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionsearch)",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://{subaccountAuthentication}.authentication.{region}.hana.ondemand.com/oauth/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "x-sap-shortText": "Retrieves measurement concept models.",
+  "x-sap-api-type": "ODATAV4",
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ]
+}

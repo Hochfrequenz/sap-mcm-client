@@ -1,0 +1,41 @@
+{
+  "@odata.count": 2,
+  "value": [
+    {
+      "id": "ffffffff-2222-2222-2222-100000000001",
+      "idText": "B_S_M1",
+      "name": "Standard electricity model",
+      "description": "Standard electricity model",
+      "conceptType_code": "MODEL",
+      "measurementClass_id": "cccccccc-3333-4444-5555-666677778888",
+      "status_code": "ACTIVE",
+      "validFrom": "2022-04-13",
+      "validTo": "9999-12-31",
+      "division_code": "EL",
+      "createdAt": "2022-04-13T15:51:04Z",
+      "modifiedAt": "2022-04-13T16:51:04Z",
+      "createdBy": "john.smith@sap.com",
+      "modifiedBy": "john.smith@sap.com",
+      "IsActiveEntity": true,
+      "HasActiveEntity": false
+    },
+    {
+      "id": "ffffffff-3333-3333-3333-200000000001",
+      "idText": "B_S_M2",
+      "name": "Standard gas model",
+      "description": "Standard gas model with RLM metering",
+      "conceptType_code": "MODEL",
+      "measurementClass_id": "cccccccc-4444-5555-6666-777788889999",
+      "status_code": "IN_PROGRESS",
+      "validFrom": "2023-01-01",
+      "validTo": "9999-12-31",
+      "division_code": "GA",
+      "createdAt": "2023-01-15T09:00:00Z",
+      "modifiedAt": "2023-02-20T11:30:00Z",
+      "createdBy": "jane.doe@sap.com",
+      "modifiedBy": "jane.doe@sap.com",
+      "IsActiveEntity": true,
+      "HasActiveEntity": false
+    }
+  ]
+}

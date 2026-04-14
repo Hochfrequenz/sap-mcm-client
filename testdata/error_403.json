@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "403001",
+    "message": "Not authorized to send event 'READ' to 'MCMService'"
+  }
+}

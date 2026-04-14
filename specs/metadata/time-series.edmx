@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="derTimeSeries" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+
+      <!-- EntityType for current time series data -->
+      <EntityType Name="TimeSeriesDataExtended">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.String" Nullable="false"/>
+        <Property Name="importID" Type="Edm.String" Nullable="true"/>
+        <Property Name="timestamp" Type="Edm.DateTimeOffset" Nullable="true"/>
+        <Property Name="timeZoneCode" Type="Edm.String" Nullable="true"/>
+        <Property Name="createdAt" Type="Edm.DateTimeOffset" Nullable="true"/>
+        <Property Name="value" Type="Edm.Double" Nullable="true"/>
+        <Property Name="missing" Type="Edm.Boolean" Nullable="true"/>
+        <Property Name="quality" Type="Edm.String" Nullable="true"/>
+        <Property Name="timeSeriesID" Type="Edm.String" Nullable="true"/>
+        <Property Name="externalID" Type="Edm.String" Nullable="true"/>
+      </EntityType>
+
+      <!-- EntityType for historical time series data -->
+      <EntityType Name="TimeSeriesDataHistoryValues">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.String" Nullable="false"/>
+        <Property Name="importID" Type="Edm.String" Nullable="true"/>
+        <Property Name="timestamp" Type="Edm.DateTimeOffset" Nullable="true"/>
+        <Property Name="timeZoneCode" Type="Edm.String" Nullable="true"/>
+        <Property Name="createdAt" Type="Edm.DateTimeOffset" Nullable="true"/>
+        <Property Name="value" Type="Edm.Double" Nullable="true"/>
+        <Property Name="missing" Type="Edm.Boolean" Nullable="true"/>
+        <Property Name="quality" Type="Edm.String" Nullable="true"/>
+        <Property Name="timeSeriesID" Type="Edm.String" Nullable="true"/>
+        <Property Name="externalID" Type="Edm.String" Nullable="true"/>
+      </EntityType>
+
+      <!-- Complex type for bulk delete request -->
+      <ComplexType Name="DeleteTimeSeriesRequestDto">
+        <Property Name="uuids" Type="Collection(Edm.Guid)" Nullable="true"/>
+        <Property Name="externalIds" Type="Collection(Edm.String)" Nullable="true"/>
+        <Property Name="startTime" Type="Edm.DateTimeOffset" Nullable="false"/>
+        <Property Name="endTime" Type="Edm.DateTimeOffset" Nullable="false"/>
+      </ComplexType>
+
+      <!-- Functions returning collections of entity types -->
+      <Function Name="getTimeSeriesDataByTimeSeriesID" IsBound="false" IsComposable="false">
+        <Parameter Name="timeSeriesID" Type="Edm.Guid" Nullable="false"/>
+        <Parameter Name="fromDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="toDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="top" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="skip" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="orderBy" Type="Collection(Edm.String)" Nullable="true"/>
+        <ReturnType Type="Collection(derTimeSeries.TimeSeriesDataExtended)"/>
+      </Function>
+
+      <Function Name="getTimeSeriesDataByExternalID" IsBound="false" IsComposable="false">
+        <Parameter Name="externalID" Type="Edm.String" Nullable="false"/>
+        <Parameter Name="fromDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="toDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="top" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="skip" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="orderBy" Type="Collection(Edm.String)" Nullable="true"/>
+        <ReturnType Type="Collection(derTimeSeries.TimeSeriesDataExtended)"/>
+      </Function>
+
+      <Function Name="getTimeSeriesDataHistoryByTimeSeriesID" IsBound="false" IsComposable="false">
+        <Parameter Name="timeSeriesID" Type="Edm.Guid" Nullable="false"/>
+        <Parameter Name="fromDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="toDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="top" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="skip" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="orderBy" Type="Collection(Edm.String)" Nullable="true"/>
+        <ReturnType Type="Collection(derTimeSeries.TimeSeriesDataHistoryValues)"/>
+      </Function>
+
+      <Function Name="getTimeSeriesDataHistoryByExternalID" IsBound="false" IsComposable="false">
+        <Parameter Name="externalID" Type="Edm.String" Nullable="false"/>
+        <Parameter Name="fromDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="toDate" Type="Edm.Date" Nullable="true"/>
+        <Parameter Name="top" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="skip" Type="Edm.Int32" Nullable="true"/>
+        <Parameter Name="orderBy" Type="Collection(Edm.String)" Nullable="true"/>
+        <ReturnType Type="Collection(derTimeSeries.TimeSeriesDataHistoryValues)"/>
+      </Function>
+
+      <!-- EntityContainer with FunctionImports -->
+      <EntityContainer Name="TimeSeriesContainer">
+        <FunctionImport Name="GetTimeSeriesByTimeSeriesID" Function="derTimeSeries.getTimeSeriesDataByTimeSeriesID" IncludeInServiceDocument="true"/>
+        <FunctionImport Name="GetTimeSeriesByExternalID" Function="derTimeSeries.getTimeSeriesDataByExternalID" IncludeInServiceDocument="true"/>
+        <FunctionImport Name="GetTimeSeriesHistoryByTimeSeriesID" Function="derTimeSeries.getTimeSeriesDataHistoryByTimeSeriesID" IncludeInServiceDocument="true"/>
+        <FunctionImport Name="GetTimeSeriesHistoryByExternalID" Function="derTimeSeries.getTimeSeriesDataHistoryByExternalID" IncludeInServiceDocument="true"/>
+      </EntityContainer>
+
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

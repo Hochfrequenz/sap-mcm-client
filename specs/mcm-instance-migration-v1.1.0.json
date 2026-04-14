@@ -1,0 +1,158 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Measurement Concept Instance Migration",
+    "description": "This operation migrates a measurement concept instance from legacy systems.",
+    "version": "1.1.0",
+    "termsOfService": "https://www.sap.com/about/agreements/cloud-services.html?tag=language:english&search=Supplement&sort=title_asc&source=social-atw-mailto#pdf-asset=f4ccdd0a-107d-0010-87a3-c30de2ffd8ff&page=1"
+  },
+  "externalDocs": {
+    "description": "API Guide of the Measurement Concept Management Component",
+    "url": "https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/39d2b485b52c425ba1c5f1121362f239.html?locale=en-US&version=Cloud"
+  },
+  "servers": [
+    {
+      "url": "https://c4u-foundation-mcm-service.cfapps.{region}.hana.ondemand.com",
+      "description": "Instance Migration API endpoint",
+      "variables": {
+        "region": {
+          "description": "Measurement Concept Instance Region",
+          "enum": ["eu10", "ap10"],
+          "default": "eu10"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Measurement Concept Instance Migration"
+    }
+  ],
+  "paths": {
+    "/odata/v4/api/migrate/v1/migrate": {
+      "post": {
+        "summary": "Send Data for a Measurement Concept Instance to Be Migrated.",
+        "description": "Send Data for a Measurement Concept Instance to Be Migrated.",
+        "tags": ["Migration Instances"],
+        "requestBody": {
+          "description": "Migration Instances",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mcmInstances.MigrationInstances"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "MigrationResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmInstances.MigrationResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid Request." },
+          "401": { "description": "Unauthorized." },
+          "403": { "description": "Forbidden." }
+        }
+      }
+    },
+    "/odata/v4/api/migrate/v1/MigrationInstances({instanceId})": {
+      "get": {
+        "summary": "Retrieve a specific migration instance with expanded related entities",
+        "tags": ["Migration Instances"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instanceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "changeProcesses",
+                  "status",
+                  "meteringLocations($expand=meteringTasks)",
+                  "actors",
+                  "marketLocations($expand=calculationRules($expand=usages),actors)",
+                  "addresses",
+                  "operandMappings"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "migration instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmInstances.MigrationInstance-Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/odata/v4/api/migrate/v1/StagedMigrationInstances": {
+      "get": {
+        "summary": "Retrieve staged migration instances.",
+        "tags": ["Migration Instances"],
+        "parameters": [
+          { "name": "$select", "in": "query", "schema": { "type": "string" } },
+          { "name": "$filter", "in": "query", "schema": { "type": "string" } },
+          { "name": "$expand", "in": "query", "schema": { "type": "string" } },
+          { "name": "$count", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "$top", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved staged migration instances.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmInstances.StagedMigrationInstances"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://{subaccountAuthentication}.authentication.{region}.hana.ondemand.com/oauth/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "x-sap-shortText": "Migrate measurement concept instances.",
+  "x-sap-api-type": "ODATAV4",
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ]
+}
