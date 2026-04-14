@@ -17,8 +17,8 @@ Provides typed models and an HTTP client that hides the OData V4 protocol behind
 | Measurement Concept Instance | ✅ | ✅ | CRUD + 7 lifecycle actions + 5 sub-entity updates + 3 notifications |
 | Measurement Concept Class | ✅ | ✅ | Read-only (list + get) |
 | Measurement Concept Model | ✅ | ✅ | Read-only (list + get) |
-| Instance Migration | later | later | v0.2 |
-| Time Series | later | later | v0.2 |
+| Instance Migration | ✅ | ✅ | Batch import: migrate + get + list staged |
+| Time Series | ✅ | ✅ | 12 read variants + 2 upload + 3 delete |
 
 ## Installation
 
@@ -140,8 +140,7 @@ Be honest about what this client can and can't do today:
 - **Not yet validated against a live SAP system.** All models are derived from the OpenAPI specs downloaded from [api.sap.com](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) on 2026-04-13. The real API may have undocumented fields, different error formats, or additional enum values.
 - **Test fixtures are spec-derived**, not recorded from real responses. A recording script will close this gap in a future version.
 - **Enum values may be incomplete.** The specs list known codes, but the real system may accept additional values. All enums are typed strings so unknown values still deserialize correctly.
-- **No batch support yet.** OData `$batch` requests for atomic multi-entity updates are not implemented in v0.1.
-- **No TimeSeries or Migration API yet.** Both are planned for v0.2.
+- **No batch support yet.** OData `$batch` requests for atomic multi-entity updates are not implemented.
 
 ## Error handling
 

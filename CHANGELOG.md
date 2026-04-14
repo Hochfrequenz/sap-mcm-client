@@ -24,7 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Migration-specific types: `MigrationInstance`, `MigrationInstanceResponse`, `StagedMigrationInstance`, `MigrationResponse`, and the full `MIG*` sub-entity set — with the migration-only fields the API adds over the Instance API (`idText` up to 60 chars, `altitude`, `subType_code`, `interruptible_code`, `externalActorId`, `plannedMeteringProcedure_code`, `plannedRegisterCode`, `installationDate`, `commercialSetupDate`).
 - `scripts/record_responses.py` — live-tenant recorder for creating golden-response fixtures in `testdata/recorded/`, driven by `.env.example`.
 - Shared JSON fixtures `testdata/timeseries_data.json`, `testdata/migration_response.json`, `testdata/migration_instance_get.json`, `testdata/migration_staged_list.json` derived from the OpenAPI specs and EDMX metadata for v0.2.
-- 91 new tests (56 Python + 35 Go), bringing the total to **417 tests** (247 Python + 170 Go) across both languages.
+- 47 explicit Pydantic `Field(alias=...)` overrides for non-FK `Id` / `Code` fields (external IDs, OBIS register codes, uppercase address fields, PD ids). The `_to_odata_camel` generator was silently dropping these fields via `extra="ignore"` against real-API responses.
+- `unittests/test_alias_consistency.py` — regression test that parses every `json:"..."` tag from `mcm/*.go` and asserts every Pydantic wire name is known to the Go side.
+- 93 new tests (58 Python + 35 Go), bringing the total to **419 tests** (249 Python + 170 Go) across both languages.
 
 ## [0.1.0]
 
