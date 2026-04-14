@@ -12,13 +12,22 @@ Provides typed models and an HTTP client that hides the OData V4 protocol behind
 
 ## Supported APIs
 
-| API | Python | Go | Operations |
-|---|---|---|---|
-| Measurement Concept Instance | ✅ | ✅ | CRUD + 7 lifecycle actions + 5 sub-entity updates + 3 notifications |
-| Measurement Concept Class | ✅ | ✅ | Read-only (list + get) |
-| Measurement Concept Model | ✅ | ✅ | Read-only (list + get) |
-| Instance Migration | ✅ | ✅ | Batch import: migrate + get + list staged |
-| Time Series | ✅ | ✅ | 12 read variants + 2 upload + 3 delete |
+All five APIs of the [SAP Cloud for Utilities Foundation](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) package:
+
+| API | Python | Go | Operations | SAP docs |
+|---|---|---|---|---|
+| Measurement Concept Instance | ✅ | ✅ | CRUD + 7 lifecycle actions + 5 sub-entity updates + 3 notifications | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/39d2b485b52c425ba1c5f1121362f239.html?locale=en-US&version=Cloud) · [reference](https://api.sap.com/api/MeasurementConceptInstanceAPI/overview) |
+| Measurement Concept Class | ✅ | ✅ | Read-only (list + get) | [reference](https://api.sap.com/api/MCMConceptClass/overview) |
+| Measurement Concept Model | ✅ | ✅ | Read-only (list + get) | [reference](https://api.sap.com/api/MCMConceptModel/overview) |
+| Instance Migration | ✅ | ✅ | Batch import: migrate + get + list staged | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/d82eec2df077462f92567971c1279cfa.html?locale=en-US&version=Cloud) |
+| Time Series | ✅ | ✅ | 12 read variants + 2 upload + 3 delete | [reference](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) |
+
+Deeper background on the MCM domain itself (Messkonzeptklasse, Messkonzeptmodell, Messkonzeptinstanz):
+
+- [SAP Utilities Core Foundation — Measurement Concept Management](https://help.sap.com/docs/r/product/Cloud_for_Utilities_Foundation/Cloud/en-US) (SAP Help Portal)
+- [MCM component overview on community.sap.com](https://community.sap.com/t5/sap-for-utilities-blog-posts/sap-utilities-core-foundation-measurement-concept-management-component/ba-p/13576654)
+
+The OpenAPI specs consumed by this client live under [`specs/`](specs/) — see [`specs/ANALYSIS.md`](specs/ANALYSIS.md) for a condensed tour of the entity hierarchy and OData conventions.
 
 ## Installation
 
@@ -132,6 +141,8 @@ The client authenticates against SAP BTP using the **OAuth2 Client Credentials**
 | `client_secret` | `<generated secret>` | Service binding `uaa.clientsecret` |
 
 Recommended: store credentials in environment variables and load them via `python-dotenv` (Python) or `os.Getenv` (Go). **Never commit credentials to the repo.**
+
+For the underlying administration details (service instance provisioning, role collections, JWT scopes), see SAP's [Administration Guide for the MCM Component](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/416202c8d4a449dbae5ac7cdfe40f3c3.html?locale=en-US&version=Cloud).
 
 ## Limitations
 
