@@ -68,3 +68,27 @@ def error_403_json() -> dict[str, Any]:
 def error_404_json() -> dict[str, Any]:
     """Raw JSON for a 404 error response."""
     return _load_json("error_404.json")
+
+
+@pytest.fixture()
+def timeseries_data_json() -> dict[str, Any]:
+    """Raw JSON for a Time Series OData read response (v0.2)."""
+    return _load_json("timeseries_data.json")
+
+
+@pytest.fixture()
+def migration_response_json() -> dict[str, Any]:
+    """Raw JSON for a POST /migrate response (v0.2)."""
+    return _load_json("migration_response.json")
+
+
+@pytest.fixture()
+def migration_instance_get_json() -> dict[str, Any]:
+    """Raw JSON for a MigrationInstances({id}) GET response (v0.2)."""
+    return _load_json("migration_instance_get.json")
+
+
+@pytest.fixture()
+def migration_staged_list_json() -> dict[str, Any]:
+    """Raw JSON for a StagedMigrationInstances list response (v0.2)."""
+    return _load_json("migration_staged_list.json")

@@ -1,0 +1,53 @@
+{
+  "@context": "$metadata#TimeSeriesDataByTimeSeriesID",
+  "value": [
+    {
+      "ID": "0aa18b64-1111-4bbb-ae00-000000000001",
+      "importID": "imp-20260101-0001",
+      "timestamp": "2026-01-01T00:00:00Z",
+      "timeZoneCode": "UTC",
+      "createdAt": "2026-01-02T00:00:00Z",
+      "value": "42.500",
+      "missing": false,
+      "quality": "MEASURED",
+      "timeSeriesID": "123e4567-e89b-12d3-a456-426614174000",
+      "externalID": "1+1-1:1.29.0"
+    },
+    {
+      "ID": "0aa18b64-1111-4bbb-ae00-000000000002",
+      "importID": "imp-20260101-0001",
+      "timestamp": "2026-01-01T00:15:00Z",
+      "timeZoneCode": "UTC",
+      "createdAt": "2026-01-02T00:00:00Z",
+      "value": "43.125",
+      "missing": false,
+      "quality": "MEASURED",
+      "timeSeriesID": "123e4567-e89b-12d3-a456-426614174000",
+      "externalID": "1+1-1:1.29.0"
+    },
+    {
+      "ID": "0aa18b64-1111-4bbb-ae00-000000000003",
+      "importID": "imp-20260101-0001",
+      "timestamp": "2026-01-01T00:30:00Z",
+      "timeZoneCode": "UTC",
+      "createdAt": "2026-01-02T00:00:00Z",
+      "value": null,
+      "missing": true,
+      "quality": "ESTIMATED",
+      "timeSeriesID": "123e4567-e89b-12d3-a456-426614174000",
+      "externalID": "1+1-1:1.29.0"
+    },
+    {
+      "ID": "0aa18b64-1111-4bbb-ae00-000000000004",
+      "importID": "imp-20260101-0001",
+      "timestamp": "2026-01-01T00:45:00Z",
+      "timeZoneCode": "UTC",
+      "createdAt": "2026-01-02T00:00:00Z",
+      "value": "41.750",
+      "missing": false,
+      "quality": "MEASURED",
+      "timeSeriesID": "123e4567-e89b-12d3-a456-426614174000",
+      "externalID": "1+1-1:1.29.0"
+    }
+  ]
+}
