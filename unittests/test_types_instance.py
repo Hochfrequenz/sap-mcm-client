@@ -1,4 +1,4 @@
-"""Tests for Pydantic model deserialization and behavior."""
+"""Tests for MeasurementConceptInstance and related Pydantic models."""
 
 from __future__ import annotations
 
@@ -11,19 +11,15 @@ import pytest
 from sap_mcm_client import (
     Address,
     Ancestor,
-    ClassType,
     CodeDescription,
-    ConceptType,
     Direction,
     Division,
     MarketLocationUsage,
     MeasurementConceptClass,
     MeasurementConceptInstance,
-    MeasurementConceptModel,
     MeteringLocationType,
     MeteringProcedure,
     MeteringTaskType,
-    ModelStatus,
     OverallStatus,
     ProcessType,
     StatusEntry,
@@ -224,131 +220,6 @@ class TestInstanceParsing:
         assert items[1].id_text == "INST-80"
         assert items[1].division_code == Division.GAS
         assert items[1].overall_status_code == OverallStatus.NEW
-
-
-# ---------------------------------------------------------------------------
-# Class parsing
-# ---------------------------------------------------------------------------
-
-
-class TestClassParsing:
-    """Tests for parsing MeasurementConceptClass from fixture data."""
-
-    def test_parse_class_get(self, class_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in class_get_json.items() if k not in ("@context", "@metadataEtag")}
-        cls = MeasurementConceptClass.model_validate(cleaned)
-
-        assert cls.id == UUID("cccccccc-3333-4444-5555-666677778888")
-        assert cls.id_text == "P_S"
-        assert cls.name == "Feed-in with unmetered generating plant"
-        assert cls.class_type_code == ClassType.CLASS
-        assert cls.division_code == Division.ELECTRICITY
-
-    def test_expanded_navigation_properties(self, class_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in class_get_json.items() if k not in ("@context", "@metadataEtag")}
-        cls = MeasurementConceptClass.model_validate(cleaned)
-
-        assert cls.class_type is not None
-        assert cls.class_type.code == "CLASS"
-        assert cls.class_type.name == "Class"
-
-        assert cls.division is not None
-        assert cls.division.code == "EL"
-        assert cls.division.name == "Electricity"
-
-    def test_nested_metering_locations(self, class_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in class_get_json.items() if k not in ("@context", "@metadataEtag")}
-        cls = MeasurementConceptClass.model_validate(cleaned)
-
-        assert cls.metering_locations is not None
-        assert len(cls.metering_locations) == 2
-        assert cls.metering_locations[0].type_code == MeteringLocationType.GRID_MES
-        assert cls.metering_locations[1].type_code == MeteringLocationType.GENERATOR_MES
-        assert cls.metering_locations[1].optional is True
-
-    def test_nested_actors(self, class_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in class_get_json.items() if k not in ("@context", "@metadataEtag")}
-        cls = MeasurementConceptClass.model_validate(cleaned)
-
-        assert cls.actors is not None
-        assert len(cls.actors) == 2
-        assert cls.actors[0].type_code == "CONSUMER"
-        assert cls.actors[0].direction_code == Direction.OUT
-        assert cls.actors[1].type_code == "PRODUCER"
-        assert cls.actors[1].direction_code == Direction.IN
-        assert cls.actors[1].energy_source_code == "SOLAR"
-
-
-# ---------------------------------------------------------------------------
-# Model parsing
-# ---------------------------------------------------------------------------
-
-
-class TestModelParsing:
-    """Tests for parsing MeasurementConceptModel from fixture data."""
-
-    def test_parse_model_get(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.id == UUID("ffffffff-2222-2222-2222-100000000001")
-        assert model.id_text == "B_S_M1"
-        assert model.name == "Standard electricity model"
-        assert model.concept_type_code == ConceptType.MODEL
-        assert model.status_code == ModelStatus.ACTIVE
-        assert model.division_code == Division.ELECTRICITY
-
-    def test_expanded_concept_type(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.concept_type is not None
-        assert model.concept_type.code == "MODEL"
-
-        assert model.status is not None
-        assert model.status.code == "ACTIVE"
-
-        assert model.division is not None
-        assert model.division.code == "EL"
-
-    def test_nested_measurement_class(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.measurement_class is not None
-        assert model.measurement_class.id == UUID("cccccccc-3333-4444-5555-666677778888")
-        assert model.measurement_class.class_type_code == ClassType.CLASS
-
-    def test_nested_market_locations(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.market_locations is not None
-        assert len(model.market_locations) == 1
-        ml = model.market_locations[0]
-        assert ml.direction_code == Direction.OUT
-        assert ml.actors_mapping is not None
-        assert len(ml.actors_mapping) == 1
-        assert ml.calculation_rules is not None
-        assert len(ml.calculation_rules) == 1
-
-    def test_nested_model_operands(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.model_operands is not None
-        assert len(model.model_operands) == 1
-        op = model.model_operands[0]
-        assert op.operand == "Z1B"
-        assert op.metering_task_type_code == MeteringTaskType.AE
-        assert op.metering_task_direction_code == Direction.OUT
-
-    def test_nested_metering_location_purposes(self, model_get_json: dict[str, Any]) -> None:
-        cleaned = {k: v for k, v in model_get_json.items() if k not in ("@context", "@metadataEtag")}
-        model = MeasurementConceptModel.model_validate(cleaned)
-
-        assert model.metering_location_purposes is not None
-        assert len(model.metering_location_purposes) == 1
 
 
 # ---------------------------------------------------------------------------
