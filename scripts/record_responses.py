@@ -125,10 +125,17 @@ def fetch_token(token_url: str, client_id: str, client_secret: str) -> str:
 
 
 def save(name: str, data: Any) -> None:
-    """Save a JSON response to testdata/recorded/<name>.json."""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    path = OUTPUT_DIR / f"{name}.json"
-    path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+    """Save a JSON response to testdata/recorded/<name>.json.
+
+    Raises RecordingError if the output directory can't be created
+    or the file can't be written (permissions, disk full, etc.).
+    """
+    try:
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        path = OUTPUT_DIR / f"{name}.json"
+        path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+    except OSError as exc:
+        raise RecordingError(f"cannot write {name}.json: {exc}") from exc
     print(f"  wrote {path.relative_to(REPO_ROOT)} ({path.stat().st_size} bytes)")
 
 
@@ -192,7 +199,13 @@ def _record_pair(
         failures.append(f"{label} list: {exc}")
         return
 
-    save(f"{label}_list", collection)
+    try:
+        save(f"{label}_list", collection)
+    except RecordingError as exc:
+        sys.stderr.write(f"  {label} list save failed: {exc}\n")
+        failures.append(f"{label} list save: {exc}")
+        return
+
     entity_id = preset_id or first_id(collection)
     if not entity_id:
         print(f"  no {label} found, skipping {label}_get")
@@ -210,7 +223,11 @@ def _record_pair(
         failures.append(f"{label} get: {exc}")
         return
 
-    save(f"{label}_get", entity)
+    try:
+        save(f"{label}_get", entity)
+    except RecordingError as exc:
+        sys.stderr.write(f"  {label} get save failed: {exc}\n")
+        failures.append(f"{label} get save: {exc}")
 
 
 def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
@@ -262,7 +279,11 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
                 f"{MIGRATION_PATH}/StagedMigrationInstances",
                 **{"$top": 5, "$count": "true"},
             )
-            save("migration_staged_list", staged)
+            try:
+                save("migration_staged_list", staged)
+            except RecordingError as exc:
+                sys.stderr.write(f"  migration staged save failed: {exc}\n")
+                failures.append(f"migration staged save: {exc}")
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code in (403, 404):
                 print(f"  skipped (HTTP {exc.response.status_code}) — migration component not enabled")
