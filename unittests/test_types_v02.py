@@ -195,7 +195,13 @@ class TestMigrationInstanceResponseParsing:
         assert len(inst.addresses) == 1
         addr = inst.addresses[0]
         assert addr.country_code == "DE"
+        # Aliased id/code fields that don't follow the OData _suffix pattern
+        # (spec uses uppercase ID + plain camelCase for postalCode).
+        assert addr.city_id == "WALLDORF"
         assert addr.city_name == "Walldorf"
+        assert addr.postal_code == "69190"
+        assert addr.street_id == "RINGSTRASSE"
+        assert addr.street_name == "Ringstrasse"
         assert addr.latitude == Decimal("49.30637000")
         assert addr.longitude == Decimal("8.64236000")
 
@@ -209,6 +215,9 @@ class TestMigrationInstanceResponseParsing:
         assert melo.id_text == "Migrated Metering Location Z1 (legacy)"
         # altitude is migration-specific
         assert melo.altitude == Decimal("125.500")
+        # Aliased non-FK id fields (plain camelCase per spec).
+        assert melo.metering_location_id == "DE0001234567890000000000000012345"
+        assert melo.device_serial_id == "SER-9876543210"
         assert melo.metering_tasks is not None
         assert len(melo.metering_tasks) == 1
         task = melo.metering_tasks[0]
@@ -216,6 +225,9 @@ class TestMigrationInstanceResponseParsing:
         assert str(task.planned_metering_procedure_code) == "SLP"
         assert task.direction_code is not None
         assert str(task.direction_code) == "OUT"
+        # OBIS register codes (plain camelCase).
+        assert task.planned_register_code == "1.8.x"
+        assert task.register_code == "1.8.0"
 
     def test_market_locations_with_calculation_rules(self, migration_instance_get_json: dict[str, Any]) -> None:
         cleaned = _strip_context(migration_instance_get_json)
@@ -224,9 +236,13 @@ class TestMigrationInstanceResponseParsing:
         assert len(inst.market_locations) == 1
         malo = inst.market_locations[0]
         assert malo.id_text == "Migrated Market Location VB (legacy)"
+        # Aliased non-FK market location id (plain camelCase per spec).
+        assert malo.market_location_id == "51111111111"
         assert malo.calculation_rules is not None
         rule = malo.calculation_rules[0]
         assert rule.expression == "Z1B"
+        # OBIS register codes (plain camelCase).
+        assert rule.planned_register_code == "1.8.x"
         assert rule.usages is not None
         assert len(rule.usages) == 2
         assert malo.actors_mapping is not None
@@ -247,6 +263,8 @@ class TestMigrationInstanceResponseParsing:
         assert actor.installation_date.year == 2024
         assert actor.commercial_setup_date is not None
         assert actor.commercial_setup_date.year == 2024
+        # externalActorId is plain camelCase (not externalActor_id).
+        assert actor.external_actor_id == "LEGACY-ACT-0815"
 
     def test_status_and_change_processes(self, migration_instance_get_json: dict[str, Any]) -> None:
         cleaned = _strip_context(migration_instance_get_json)
@@ -261,6 +279,9 @@ class TestMigrationInstanceResponseParsing:
         assert cp.finished is True
         assert cp.modified_at is not None
         assert cp.modified_at.year == 2024
+        # Aliased external order/process ids (plain camelCase).
+        assert cp.external_order_id == "LEGACY-ORD-4711"
+        assert cp.external_process_id == "LEGACY-PROC-0815"
 
     def test_operand_mappings(self, migration_instance_get_json: dict[str, Any]) -> None:
         cleaned = _strip_context(migration_instance_get_json)

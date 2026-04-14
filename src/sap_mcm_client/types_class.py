@@ -26,6 +26,7 @@ class ClassMeteringLocation(MCMBaseModel):
     )
     external_code: str | None = Field(
         None,
+        alias="externalCode",
         max_length=20,
         description="The external code ",
     )
@@ -100,6 +101,7 @@ class ClassActor(MCMBaseModel):
     )
     external_code: str | None = Field(
         None,
+        alias="externalCode",
         max_length=20,
         description="The external code ",
     )

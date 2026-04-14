@@ -81,6 +81,7 @@ class ModelMeteringProcedure(MCMBaseModel):
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
 
@@ -139,6 +140,7 @@ class ModelCalculationRule(MCMBaseModel):
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     position: int | None = Field(
@@ -285,6 +287,7 @@ class ModelMarketLocation(MCMBaseModel):
     )
     external_code: str | None = Field(
         None,
+        alias="externalCode",
         max_length=20,
         description="The external code.",
     )
@@ -432,6 +435,7 @@ class MeasurementConceptModel(MCMBaseModel):
     )
     external_code: str | None = Field(
         None,
+        alias="externalCode",
         max_length=20,
         description="The external code.",
     )

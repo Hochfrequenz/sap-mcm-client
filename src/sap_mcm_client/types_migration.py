@@ -62,6 +62,7 @@ class MigrationAddress(MCMRequestModel):
     )
     city_id: str | None = Field(
         None,
+        alias="cityID",
         max_length=12,
         description="The city ID for which the measurement concept is instantiated.",
     )
@@ -77,11 +78,13 @@ class MigrationAddress(MCMRequestModel):
     )
     postal_code: str | None = Field(
         None,
+        alias="postalCode",
         max_length=10,
         description="The postal code for which the measurement concept is instantiated.",
     )
     street_id: str | None = Field(
         None,
+        alias="streetID",
         max_length=12,
         description="The street ID for which the measurement concept is instantiated.",
     )
@@ -172,10 +175,12 @@ class MigrationMeteringTask(MCMRequestModel):
     )
     planned_register_code: str | None = Field(
         None,
+        alias="plannedRegisterCode",
         description="The OBIS-based register code that is planned before the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
 
@@ -234,10 +239,12 @@ class MigrationCalculationRule(MCMRequestModel):
     )
     planned_register_code: str | None = Field(
         None,
+        alias="plannedRegisterCode",
         description="The OBIS-based register code that is planned before the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     register_code: str | None = Field(
         None,
+        alias="registerCode",
         description="The OBIS-based register code that is determined after the installation of devices. For information about the supported codes, refer to MCIMeteringTasks.",
     )
     position: int | None = Field(
@@ -309,6 +316,7 @@ class MigrationMeteringLocation(MCMRequestModel):
     )
     metering_location_id: str | None = Field(
         None,
+        alias="meteringLocationId",
         max_length=33,
         description="The ID of the metering location.",
     )
@@ -357,6 +365,7 @@ class MigrationMeteringLocation(MCMRequestModel):
     )
     device_serial_id: str | None = Field(
         None,
+        alias="deviceSerialId",
         max_length=40,
         description="The universally unique identifier (UUID) of the device.",
     )
@@ -410,6 +419,7 @@ class MigrationMarketLocation(MCMRequestModel):
     )
     market_location_id: str | None = Field(
         None,
+        alias="marketLocationId",
         max_length=33,
         description="The ID of the market location.",
     )
@@ -527,6 +537,7 @@ class MigrationActor(MCMRequestModel):
     )
     external_actor_id: str | None = Field(
         None,
+        alias="externalActorId",
         max_length=33,
         description="The external ID of the actor, used to reference the actor in legacy systems.",
     )
@@ -587,11 +598,13 @@ class MigrationChangeProcess(MCMRequestModel):
     )
     external_order_id: str | None = Field(
         None,
+        alias="externalOrderId",
         max_length=40,
         description="The ID of the external order that corresponds to the instantiation of the measurement concept.",
     )
     external_process_id: str | None = Field(
         None,
+        alias="externalProcessId",
         max_length=40,
         description="The reference to the process ID from the pre-system.",
     )
