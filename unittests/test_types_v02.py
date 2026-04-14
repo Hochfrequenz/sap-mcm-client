@@ -330,7 +330,7 @@ class TestStagedMigrationInstanceParsing:
         assert entry.time_migration_start is None
         assert entry.time_migration_end is None
 
-    def test_by_alias_dump_uses_requestId(self, migration_staged_list_json: dict[str, Any]) -> None:
+    def test_by_alias_dump_uses_request_id_wire_name(self, migration_staged_list_json: dict[str, Any]) -> None:
         entry = StagedMigrationInstance.model_validate(migration_staged_list_json["value"][0])
         dumped = entry.model_dump(by_alias=True, mode="json", exclude_none=True)
         assert "requestId" in dumped
