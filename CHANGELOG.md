@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom alias generator (`_to_odata_camel`) that preserves SAP's `_code` / `_id` / `PD` naming conventions.
 - Custom Go `Decimal` type supporting IEEE754Compatible JSON (string or number).
 - Typed exception hierarchy (Python) / error helpers `IsNotFound`, `IsForbidden`, `IsUnauthorized` (Go).
-- 311 tests across both languages (191 Python + 120 Go), CI covering Python 3.11-3.14 and Go 1.25-1.26.
+- 326 tests across both languages (191 Python + 135 Go), CI covering Python 3.11-3.14 and Go 1.25-1.26.
 - Shared JSON fixtures in `testdata/` derived from OpenAPI spec examples.
 
 ### Known limitations
