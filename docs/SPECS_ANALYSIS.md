@@ -1,9 +1,13 @@
 # MKV API Analysis
 
+This is our condensed analysis of the SAP MCM API surface, derived from the OpenAPI specs (v1.1.0) downloaded from [api.sap.com](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview).
+
+The original SAP spec files are **not redistributed** in this repository — they are SAP's intellectual property, and only the SAP API Hub may distribute them. To download them yourself for development, see [CONTRIBUTING.md → "Downloading the OpenAPI specs"](../CONTRIBUTING.md).
+
 ## Known APIs
 
-### 1. MCM Instance Migration API (spec available)
-- **Spec:** `mcm-instance-migration-v1.1.0.json`
+### 1. MCM Instance Migration API
+- **Spec on api.sap.com:** [Measurement Concept Instance Migration](https://api.sap.com/api/MeasurementConceptInstanceAPI/overview) (filename when downloaded: `mcm-instance-migration-v1.1.0.json`)
 - **Base:** `https://c4u-foundation-mcm-service.cfapps.{region}.hana.ondemand.com`
 - **Path:** `/odata/v4/api/migrate/v1/`
 - **Operations:** POST migrate, GET MigrationInstances({id}), GET StagedMigrationInstances

@@ -2,7 +2,8 @@
 
 The SAP MCM OData wire format is authoritatively captured in the Go struct
 tags under ``mcm/*.go`` (which in turn were cross-checked against the
-OpenAPI specs under ``specs/``). This test parses those tags and verifies
+SAP OpenAPI specs that contributors download locally; see CONTRIBUTING.md).
+This test parses those tags and verifies
 that every Pydantic model in :mod:`sap_mcm_client.types_*` produces an
 alias that is known to the Go side.
 

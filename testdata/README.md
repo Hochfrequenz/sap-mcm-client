@@ -1,13 +1,15 @@
 # Test Fixtures
 
-These JSON fixtures are **derived from the OpenAPI specification examples** found in
-the `specs/` directory. They were hand-assembled using field names, example values,
-and schema structures from the following spec files:
+These JSON fixtures are **derived from the SAP MCM OpenAPI specification examples**
+(v1.1.0). The original spec files are SAP IP and not redistributed in this repository
+— see [CONTRIBUTING.md](../CONTRIBUTING.md#downloading-the-openapi-specs) for how to
+download them locally. The fixtures here were hand-assembled using field names,
+example values, and schema structures from these specs:
 
-- `specs/mcm-instance.json` (v1.1.0)
-- `specs/mcm-concept-class.json` (v1.1.0)
-- `specs/mcm-concept-model.json` (v1.1.0)
-- `specs/mcm-instance-migration-v1.1.0.json` (v1.1.0)
+- Measurement Concept Instance (`mcm-instance.json`, v1.1.0)
+- Measurement Concept Class (`mcm-concept-class.json`, v1.1.0)
+- Measurement Concept Model (`mcm-concept-model.json`, v1.1.0)
+- Measurement Concept Instance Migration (`mcm-instance-migration-v1.1.0.json`, v1.1.0)
 
 **These fixtures were NOT recorded from a live system.** They represent realistic but
 synthetic OData v4 responses constructed to match the wire format described in the
