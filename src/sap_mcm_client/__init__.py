@@ -17,6 +17,9 @@ from sap_mcm_client._errors import (
 # OData response container
 from sap_mcm_client._odata import ListResponse
 
+# Migration resource / types
+from sap_mcm_client._resources import MigrationResource, TimeSeriesResource
+
 # Enums
 from sap_mcm_client.enums import (
     ActorType,
@@ -84,6 +87,24 @@ from sap_mcm_client.types_instance import (
     OperandMapping,
     OperandMappingUpdate,
 )
+from sap_mcm_client.types_migration import (
+    MigrationActor,
+    MigrationAddress,
+    MigrationCalculationRule,
+    MigrationChangeProcess,
+    MigrationInstance,
+    MigrationInstanceResponse,
+    MigrationInstancesRequest,
+    MigrationMarketLocation,
+    MigrationMarketLocationActor,
+    MigrationMarketLocationUsage,
+    MigrationMeteringLocation,
+    MigrationMeteringTask,
+    MigrationOperandMapping,
+    MigrationResponse,
+    MigrationStatus,
+    StagedMigrationInstance,
+)
 
 # Model types
 from sap_mcm_client.types_model import (
@@ -111,6 +132,10 @@ from sap_mcm_client.types_process_data import (
     MeteringLocationPDUpdate,
     MeteringTaskPD,
     MeteringTaskPDUpdate,
+)
+from sap_mcm_client.types_timeseries import (
+    DeleteTimeSeriesRequest,
+    TimeSeriesDataPoint,
 )
 
 __all__ = [
@@ -200,4 +225,26 @@ __all__ = [
     "MeteringLocationPDUpdate",
     "MeteringTaskPD",
     "MeteringTaskPDUpdate",
+    # Migration
+    "MigrationResource",
+    "MigrationActor",
+    "MigrationAddress",
+    "MigrationCalculationRule",
+    "MigrationChangeProcess",
+    "MigrationInstance",
+    "MigrationInstanceResponse",
+    "MigrationInstancesRequest",
+    "MigrationMarketLocation",
+    "MigrationMarketLocationActor",
+    "MigrationMarketLocationUsage",
+    "MigrationMeteringLocation",
+    "MigrationMeteringTask",
+    "MigrationOperandMapping",
+    "MigrationResponse",
+    "MigrationStatus",
+    "StagedMigrationInstance",
+    # Time series
+    "TimeSeriesResource",
+    "TimeSeriesDataPoint",
+    "DeleteTimeSeriesRequest",
 ]

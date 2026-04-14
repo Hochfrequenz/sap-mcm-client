@@ -63,6 +63,7 @@ class ActorPDExternalReference(MCMBaseModel):
     )
     reference_id: str | None = Field(
         None,
+        alias="referenceId",
         description="The ID of the external reference.",
     )
     position: int | None = Field(
@@ -152,6 +153,7 @@ class MeteringLocationPD(MCMBaseModel):
     )
     planned_metering_location_id: str | None = Field(
         None,
+        alias="plannedMeteringLocationId",
         max_length=33,
         description="The ID of a customer's own metering location.",
     )
@@ -316,6 +318,7 @@ class InstanceProcessData(MCMBaseModel):
     )
     subscriber_id: str | None = Field(
         None,
+        alias="subscriberId",
         description="The ID of the subscriber.",
     )
     leading_connection_user: str | None = Field(
@@ -403,6 +406,7 @@ class MeteringLocationPDUpdate(MCMRequestModel):
     )
     location_code: str | None = Field(
         None,
+        alias="locationCode",
         max_length=10,
         description="Location code for metering location.",
     )

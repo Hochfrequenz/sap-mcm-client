@@ -81,6 +81,9 @@ class TestInstanceParsing:
         assert melo.id == UUID("11111111-aaaa-bbbb-cccc-000000000001")
         assert melo.id_text == "Z1"
         assert melo.type_code == MeteringLocationType.GRID_MES
+        # External-ID / device-serial aliased fields (non-FK id fields)
+        assert melo.metering_location_id == "DE0001234567890000000000000012345"
+        assert melo.device_serial_id == "SER-9876543210"
 
         # Nested metering tasks
         assert melo.metering_tasks is not None
@@ -89,6 +92,9 @@ class TestInstanceParsing:
         assert task.direction_code == Direction.OUT
         assert task.type_code == MeteringTaskType.AE
         assert task.planned_metering_procedure_code == MeteringProcedure.SLP
+        # OBIS register codes (plain camelCase wire format)
+        assert task.planned_register_code == "1.8.x"
+        assert task.register_code == "1.8.0"
 
     def test_nested_market_locations(self, instance_get_json: dict[str, Any]) -> None:
         cleaned = {k: v for k, v in instance_get_json.items() if k not in ("@context", "@metadataEtag")}
@@ -99,11 +105,16 @@ class TestInstanceParsing:
 
         malo = inst.market_locations[0]
         assert malo.direction_code == Direction.OUT
+        # External POD-style market location id (plain camelCase wire format).
+        assert malo.market_location_id == "51111111111"
         assert malo.calculation_rules is not None
         assert len(malo.calculation_rules) == 1
 
         rule = malo.calculation_rules[0]
         assert rule.metering_procedure_code == MeteringProcedure.SLP
+        # OBIS register codes (plain camelCase).
+        assert rule.planned_register_code == "1.8.x"
+        assert rule.register_code is None  # explicitly null in the fixture
         assert rule.steps is not None
         assert len(rule.steps) == 1
 
@@ -130,18 +141,19 @@ class TestInstanceParsing:
         assert len(inst.addresses) == 1
         addr = inst.addresses[0]
         assert addr.id == UUID("dddddddd-aaaa-bbbb-cccc-111122223333")
-        # Fields whose alias matches the fixture's camelCase:
-        assert addr.country_code == "DE"  # fixture key is country_code (match)
-        assert addr.city_name == "Walldorf"  # cityName matches
-        assert addr.street_name == "Ringstrasse"  # streetName matches
-        assert addr.house_number == "981"  # houseNumber matches
-        assert addr.floor_number == "5"  # floorNumber matches
+        # All address wire names are now asserted; the non-FK id/code fields
+        # (cityID, streetID, postalCode) carry explicit Field(alias=...) so
+        # they round-trip through the wire format correctly.
+        assert addr.country_code == "DE"  # country_code (OData _code suffix)
+        assert addr.city_id == "WALLDORF"  # cityID (uppercase per spec)
+        assert addr.city_name == "Walldorf"  # cityName
+        assert addr.postal_code == "69190"  # postalCode
+        assert addr.street_id == "RINGSTRASSE"  # streetID (uppercase per spec)
+        assert addr.street_name == "Ringstrasse"  # streetName
+        assert addr.house_number == "981"  # houseNumber
+        assert addr.floor_number == "5"  # floorNumber
         assert addr.supplement == "5.Stock App 67"
-        assert addr.time_zone == "CEST"  # timeZone matches
-        # Note: postal_code -> alias "postal_code" but fixture uses "postalCode",
-        # city_id -> alias "city_id" but fixture uses "cityID". These are
-        # known mismatches where the OData suffix preservation doesn't match
-        # the Address sub-entity wire format.
+        assert addr.time_zone == "CEST"  # timeZone
 
     def test_decimal_fields_in_metering_location(self, instance_get_json: dict[str, Any]) -> None:
         """Loss factors are serialized as strings by IEEE754Compatible mode."""
@@ -184,9 +196,16 @@ class TestInstanceParsing:
         cp = inst.change_processes[0]
         assert cp.process_type_code == ProcessType.CREATE
         assert cp.finished is True
+        # Aliased external id fields (plain camelCase, not _id suffix)
+        assert cp.external_order_id == "4711"
+        assert cp.external_process_id is None
         assert cp.process_data is not None
+        # subscriberId is plain camelCase, not subscriber_id
+        assert cp.process_data.subscriber_id is None
         assert cp.instance_characteristics is not None
         assert len(cp.instance_characteristics) == 2
+        # modelEntityId is plain camelCase, not modelEntity_id
+        assert cp.instance_characteristics[0].model_entity_id == UUID("bbb50001-5555-5555-5555-501010000001")
 
     def test_status_entries(self, instance_get_json: dict[str, Any]) -> None:
         cleaned = {k: v for k, v in instance_get_json.items() if k not in ("@context", "@metadataEtag")}

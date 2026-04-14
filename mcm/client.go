@@ -11,7 +11,12 @@ import (
 	"time"
 )
 
-const basePath = "/odata/v4/api/mcm/v1"
+const (
+	basePath                = "/odata/v4/api/mcm/v1"
+	migrationBasePath       = "/odata/v4/api/migrate/v1"
+	timeSeriesODataBasePath = "/odata/v4/api/v1/TimeSeries"
+	timeSeriesRESTBasePath  = "/api/v1/timeseries"
+)
 
 // Config holds the configuration for creating a new MCM API Client.
 type Config struct {
@@ -34,8 +39,13 @@ type Client struct {
 	Classes *ClassService
 	// Models provides operations on measurement concept models.
 	Models *ModelService
+	// Migration provides access to the Measurement Concept Instance Migration API.
+	Migration *MigrationService
+	// TimeSeries provides operations on the SAP Time Series API.
+	TimeSeries *TimeSeriesService
 
-	baseURL    string
+	baseURL    string // MCM-prefixed base URL (host + /odata/v4/api/mcm/v1).
+	rawBaseURL string // Host-only base URL, used by services with non-MCM prefixes.
 	httpClient *http.Client
 }
 
@@ -48,14 +58,18 @@ func NewClient(cfg Config) *Client {
 		timeout = 30 * time.Second
 	}
 
+	raw := strings.TrimRight(cfg.BaseURL, "/")
 	c := &Client{
-		baseURL:    strings.TrimRight(cfg.BaseURL, "/") + basePath,
+		baseURL:    raw + basePath,
+		rawBaseURL: raw,
 		httpClient: newAuthenticatedClient(cfg.Auth, timeout),
 	}
 
 	c.Instances = &InstanceService{client: c}
 	c.Classes = &ClassService{client: c}
 	c.Models = &ModelService{client: c}
+	c.Migration = &MigrationService{client: c}
+	c.TimeSeries = &TimeSeriesService{client: c}
 
 	return c
 }
@@ -64,7 +78,13 @@ func NewClient(cfg Config) *Client {
 // If body is non-nil it is marshaled to JSON and set as the request body.
 func (c *Client) newRequest(ctx context.Context, method, path string, body any) (*http.Request, error) {
 	url := c.baseURL + "/" + strings.TrimLeft(path, "/")
+	return c.newAbsoluteRequest(ctx, method, url, body)
+}
 
+// newAbsoluteRequest creates an HTTP request at an explicit URL, setting
+// the standard OData headers. Used by services whose endpoints live
+// outside the MCM base path (for example, the Time Series API).
+func (c *Client) newAbsoluteRequest(ctx context.Context, method, url string, body any) (*http.Request, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		buf, err := json.Marshal(body)
