@@ -1,11 +1,10 @@
-"""Tests for the MCMClient and resource classes."""
+"""Tests for MCMClient lifecycle, error mapping, and the InstanceResource."""
 
 from __future__ import annotations
 
 import json
-from typing import Any, cast
+from typing import Any
 from unittest.mock import patch
-from urllib.parse import unquote
 from uuid import UUID
 
 import httpx
@@ -20,9 +19,7 @@ from sap_mcm_client import (
     MCMForbiddenError,
     MCMNotFoundError,
     MCMValidationError,
-    MeasurementConceptClass,
     MeasurementConceptInstance,
-    MeasurementConceptModel,
     OverallStatus,
 )
 from sap_mcm_client._odata import parse_entity
@@ -34,79 +31,15 @@ from sap_mcm_client._resources import (
 )
 from sap_mcm_client.types_instance import MeasurementConceptInstanceCreate
 
-from .conftest import TESTDATA
-
-# ---------------------------------------------------------------------------
-# Test data paths
-# ---------------------------------------------------------------------------
-
-
-def _decoded_url(request: httpx.Request) -> str:
-    """Return the percent-decoded URL string for assertion matching."""
-    return unquote(str(request.url))
-
-
-def _load_json(name: str) -> dict[str, Any]:
-    return cast(dict[str, Any], json.loads((TESTDATA / name).read_text(encoding="utf-8")))
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-BASE_URL = "https://tenant.example.com"
-TOKEN_URL = "https://auth.example.com/oauth/token"
-_BASE_PATH = "/odata/v4/api/mcm/v1"
-
-
-def _json_response(
-    data: dict[str, Any] | list[Any],
-    status_code: int = 200,
-) -> httpx.Response:
-    """Create an httpx.Response with JSON body."""
-    return httpx.Response(
-        status_code=status_code,
-        json=data,
-        request=httpx.Request("GET", "https://example.com"),
-    )
-
-
-def _make_mock_transport(
-    responses: dict[str, httpx.Response] | None = None,
-    default_response: httpx.Response | None = None,
-) -> httpx.MockTransport:
-    """Create a MockTransport that routes by URL path.
-
-    Parameters
-    ----------
-    responses:
-        Mapping of URL path substrings to responses.
-    default_response:
-        Fallback response for unmatched URLs.
-    """
-    captured_requests: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        captured_requests.append(request)
-        url_str = str(request.url)
-        if responses:
-            for path_substr, resp in responses.items():
-                if path_substr in url_str:
-                    return resp
-        if default_response is not None:
-            return default_response
-        return httpx.Response(status_code=404, request=request)
-
-    transport = httpx.MockTransport(handler)
-    transport._captured_requests = captured_requests  # type: ignore[attr-defined]
-    return transport
-
-
-def _make_client_with_transport(transport: httpx.MockTransport) -> tuple[httpx.Client, str]:
-    """Create an httpx.Client with the given transport and no auth."""
-    client = httpx.Client(transport=transport)
-    return client, BASE_URL
-
+from .conftest import (
+    BASE_URL,
+    TOKEN_URL,
+    _decoded_url,
+    _json_response,
+    _load_json,
+    _make_client_with_transport,
+    _make_mock_transport,
+)
 
 # ---------------------------------------------------------------------------
 # MCMClient construction and lifecycle
@@ -574,93 +507,3 @@ class TestLifecycleActions:
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert f"/changeProcesses({cp_id})/MCMService.notifyFinalDataEntryReady" in url_str
-
-
-# ---------------------------------------------------------------------------
-# ClassResource with mock transport
-# ---------------------------------------------------------------------------
-
-
-class TestClassResource:
-    """Tests for the ClassResource using mock HTTP transport."""
-
-    def test_list_classes(self) -> None:
-        data = _load_json("class_list.json")
-        transport = _make_mock_transport(responses={"/MeasurementConceptClasses": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ClassResource(http_client, base_url)
-
-        result = resource.list(count=True)
-
-        assert isinstance(result, ListResponse)
-        assert len(result.items) == 2
-        assert result.count == 2
-
-    def test_get_class(self) -> None:
-        data = _load_json("class_get.json")
-        class_id = "cccccccc-3333-4444-5555-666677778888"
-        transport = _make_mock_transport(responses={f"/MeasurementConceptClasses({class_id})": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ClassResource(http_client, base_url)
-
-        result = resource.get(class_id, include=["metering_locations", "actors"])
-
-        assert isinstance(result, MeasurementConceptClass)
-        assert result.id == UUID(class_id)
-
-    def test_list_classes_with_division_filter(self) -> None:
-        data = _load_json("class_list.json")
-        transport = _make_mock_transport(responses={"/MeasurementConceptClasses": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ClassResource(http_client, base_url)
-
-        resource.list(division=Division.ELECTRICITY)
-
-        captured = transport._captured_requests  # type: ignore[attr-defined]
-        url_str = _decoded_url(captured[0])
-        assert "division_code" in url_str
-        assert "EL" in url_str
-
-
-# ---------------------------------------------------------------------------
-# ModelResource with mock transport
-# ---------------------------------------------------------------------------
-
-
-class TestModelResource:
-    """Tests for the ModelResource using mock HTTP transport."""
-
-    def test_list_models(self) -> None:
-        data = _load_json("model_list.json")
-        transport = _make_mock_transport(responses={"/MeasurementConceptModels": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ModelResource(http_client, base_url)
-
-        result = resource.list(top=5)
-
-        assert isinstance(result, ListResponse)
-        assert len(result.items) == 2
-
-    def test_get_model(self) -> None:
-        data = _load_json("model_get.json")
-        model_id = "ffffffff-2222-2222-2222-100000000001"
-        transport = _make_mock_transport(responses={f"/MeasurementConceptModels({model_id})": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ModelResource(http_client, base_url)
-
-        result = resource.get(model_id, include=["all"])
-
-        assert isinstance(result, MeasurementConceptModel)
-        assert result.id == UUID(model_id)
-
-        captured = transport._captured_requests  # type: ignore[attr-defined]
-        assert "$expand=*" in _decoded_url(captured[0])
-
-    def test_model_401_raises(self) -> None:
-        error_data = _load_json("error_401.json")
-        transport = _make_mock_transport(default_response=_json_response(error_data, 401))
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = ModelResource(http_client, base_url)
-
-        with pytest.raises(MCMAuthenticationError):
-            resource.list()
