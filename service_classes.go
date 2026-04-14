@@ -1,3 +1,4 @@
+//nolint:dupl // intentional - read-only services (Classes/Models) share structure
 package mcm
 
 import (

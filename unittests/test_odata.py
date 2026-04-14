@@ -7,7 +7,13 @@ from uuid import UUID
 
 import pytest
 
-from sap_mcm_client import ListResponse, MeasurementConceptClass, MeasurementConceptInstance, MeasurementConceptModel, ModelStatus
+from sap_mcm_client import (
+    ListResponse,
+    MeasurementConceptClass,
+    MeasurementConceptInstance,
+    MeasurementConceptModel,
+    ModelStatus,
+)
 from sap_mcm_client._odata import (
     CLASS_EXPAND_MAP,
     INSTANCE_EXPAND_MAP,
@@ -17,7 +23,6 @@ from sap_mcm_client._odata import (
     parse_collection,
     parse_entity,
 )
-
 
 # ---------------------------------------------------------------------------
 # build_expand
@@ -60,10 +65,12 @@ class TestBuildExpand:
 
     def test_instance_market_locations_expand(self) -> None:
         result = build_expand(["market_locations"], INSTANCE_EXPAND_MAP)
+        assert result is not None
         assert "marketLocations($expand=calculationRules" in result
 
     def test_instance_change_processes_expand(self) -> None:
         result = build_expand(["change_processes"], INSTANCE_EXPAND_MAP)
+        assert result is not None
         assert "changeProcesses" in result
         assert "processData" in result
 
@@ -81,13 +88,12 @@ class TestBuildExpand:
 
     def test_model_expand_market_locations(self) -> None:
         result = build_expand(["market_locations"], MODEL_EXPAND_MAP)
+        assert result is not None
         assert "marketLocations" in result
         assert "calculationRules" in result
 
     def test_model_expand_multiple(self) -> None:
-        result = build_expand(
-            ["concept_type", "status", "division"], MODEL_EXPAND_MAP
-        )
+        result = build_expand(["concept_type", "status", "division"], MODEL_EXPAND_MAP)
         assert result == "conceptType,status,division"
 
     def test_unknown_name_in_class_map(self) -> None:
@@ -139,9 +145,7 @@ class TestBuildQueryParams:
         assert params == {"$filter": "division_code eq 'EL'"}
 
     def test_filters_multiple(self) -> None:
-        params = build_query_params(
-            filters={"division_code": "EL", "overall_status_code": "ACTIVE"}
-        )
+        params = build_query_params(filters={"division_code": "EL", "overall_status_code": "ACTIVE"})
         assert "$filter" in params
         filter_str = params["$filter"]
         assert "division_code eq 'EL'" in filter_str
@@ -149,15 +153,11 @@ class TestBuildQueryParams:
         assert " and " in filter_str
 
     def test_filters_none_values_skipped(self) -> None:
-        params = build_query_params(
-            filters={"division_code": "EL", "overall_status_code": None}
-        )
+        params = build_query_params(filters={"division_code": "EL", "overall_status_code": None})
         assert params == {"$filter": "division_code eq 'EL'"}
 
     def test_filters_all_none_no_filter_key(self) -> None:
-        params = build_query_params(
-            filters={"division_code": None, "overall_status_code": None}
-        )
+        params = build_query_params(filters={"division_code": None, "overall_status_code": None})
         assert "$filter" not in params
 
     def test_combined_params(self) -> None:
@@ -176,9 +176,7 @@ class TestBuildQueryParams:
 
     def test_filter_key_converted_to_odata_camel(self) -> None:
         """Filter keys in snake_case are converted via _to_odata_camel."""
-        params = build_query_params(
-            filters={"overall_status_code": "ACTIVE"}
-        )
+        params = build_query_params(filters={"overall_status_code": "ACTIVE"})
         assert "overallStatus_code eq 'ACTIVE'" in params["$filter"]
 
 
@@ -249,17 +247,19 @@ class TestListResponse:
     """Tests for the ListResponse dataclass."""
 
     def test_is_frozen(self) -> None:
-        resp = ListResponse(items=[], count=5)
+        resp: ListResponse[MeasurementConceptInstance] = ListResponse(items=[], count=5)
         with pytest.raises(AttributeError):
             resp.items = []  # type: ignore[misc]
         with pytest.raises(AttributeError):
             resp.count = 10  # type: ignore[misc]
 
     def test_default_count_is_none(self) -> None:
-        resp = ListResponse(items=[])
+        resp: ListResponse[MeasurementConceptInstance] = ListResponse(items=[])
         assert resp.count is None
 
-    def test_items_and_count(self) -> None:
-        resp = ListResponse(items=["a", "b"], count=2)
-        assert resp.items == ["a", "b"]
+    def test_items_and_count(self, instance_get_json: dict[str, Any]) -> None:
+        cleaned = {k: v for k, v in instance_get_json.items() if k not in ("@context", "@metadataEtag")}
+        inst = MeasurementConceptInstance.model_validate(cleaned)
+        resp: ListResponse[MeasurementConceptInstance] = ListResponse(items=[inst, inst], count=2)
+        assert len(resp.items) == 2
         assert resp.count == 2

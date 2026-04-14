@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 from urllib.parse import unquote
 from uuid import UUID
@@ -34,11 +34,11 @@ from sap_mcm_client._resources import (
 )
 from sap_mcm_client.types_instance import MeasurementConceptInstanceCreate
 
+from .conftest import TESTDATA
+
 # ---------------------------------------------------------------------------
 # Test data paths
 # ---------------------------------------------------------------------------
-
-from .conftest import TESTDATA
 
 
 def _decoded_url(request: httpx.Request) -> str:
@@ -47,7 +47,7 @@ def _decoded_url(request: httpx.Request) -> str:
 
 
 def _load_json(name: str) -> dict[str, Any]:
-    return json.loads((TESTDATA / name).read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads((TESTDATA / name).read_text(encoding="utf-8")))
 
 
 # ---------------------------------------------------------------------------
@@ -172,9 +172,7 @@ class TestMCMClientLifecycle:
 class TestErrorMapping:
     """Tests for HTTP status code to exception type mapping."""
 
-    def test_401_raises_authentication_error(
-        self, error_401_json: dict[str, Any]
-    ) -> None:
+    def test_401_raises_authentication_error(self, error_401_json: dict[str, Any]) -> None:
         response = httpx.Response(
             status_code=401,
             json=error_401_json,
@@ -185,9 +183,7 @@ class TestErrorMapping:
         assert exc_info.value.status_code == 401
         assert "Unauthorized" in str(exc_info.value)
 
-    def test_403_raises_forbidden_error(
-        self, error_403_json: dict[str, Any]
-    ) -> None:
+    def test_403_raises_forbidden_error(self, error_403_json: dict[str, Any]) -> None:
         response = httpx.Response(
             status_code=403,
             json=error_403_json,
@@ -198,9 +194,7 @@ class TestErrorMapping:
         assert exc_info.value.status_code == 403
         assert "Not authorized" in str(exc_info.value)
 
-    def test_404_raises_not_found_error(
-        self, error_404_json: dict[str, Any]
-    ) -> None:
+    def test_404_raises_not_found_error(self, error_404_json: dict[str, Any]) -> None:
         response = httpx.Response(
             status_code=404,
             json=error_404_json,
@@ -240,9 +234,7 @@ class TestErrorMapping:
         # Should not raise
         _raise_for_status(response)
 
-    def test_error_detail_is_captured(
-        self, error_404_json: dict[str, Any]
-    ) -> None:
+    def test_error_detail_is_captured(self, error_404_json: dict[str, Any]) -> None:
         response = httpx.Response(
             status_code=404,
             json=error_404_json,
@@ -301,9 +293,7 @@ class TestInstanceResource:
 
     def test_list_instances(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(
-            responses={"/MCMInstances": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
@@ -323,13 +313,11 @@ class TestInstanceResource:
 
     def test_list_instances_with_filters(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(
-            responses={"/MCMInstances": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
-        result = resource.list(
+        _ = resource.list(
             division=Division.ELECTRICITY,
             overall_status=OverallStatus.ACTIVE,
         )
@@ -344,9 +332,7 @@ class TestInstanceResource:
     def test_get_instance(self) -> None:
         data = _load_json("instance_get.json")
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(
-            responses={f"/MCMInstances({instance_id})": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={f"/MCMInstances({instance_id})": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
@@ -367,9 +353,7 @@ class TestInstanceResource:
         that stdlib json cannot serialize. This is a known limitation.
         """
         response_data = _load_json("instance_get.json")
-        transport = _make_mock_transport(
-            responses={"/MCMInstances": _json_response(response_data, 201)}
-        )
+        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(response_data, 201)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
@@ -411,9 +395,7 @@ class TestInstanceResource:
 
     def test_list_instances_with_include(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(
-            responses={"/MCMInstances": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
@@ -427,9 +409,7 @@ class TestInstanceResource:
 
     def test_instance_404_raises(self) -> None:
         error_data = _load_json("error_404.json")
-        transport = _make_mock_transport(
-            default_response=_json_response(error_data, 404)
-        )
+        transport = _make_mock_transport(default_response=_json_response(error_data, 404))
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
@@ -453,32 +433,34 @@ class TestLifecycleActions:
     @staticmethod
     def _minimal_instance_response() -> httpx.Response:
         """A minimal valid instance response for lifecycle action tests."""
-        return _json_response({
-            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "idText": "INST-79",
-        })
+        return _json_response(
+            {
+                "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "idText": "INST-79",
+            }
+        )
 
     def test_init_change_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(
-            responses={"MCMService.initChange": self._minimal_instance_response()}
-        )
+        transport = _make_mock_transport(responses={"MCMService.initChange": self._minimal_instance_response()})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
         from sap_mcm_client.types_actions import InitChangeRequest
 
-        data = InitChangeRequest.model_validate({
-            "dataForNewInstanceVersion": [
-                {
-                    "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
-                }
-            ]
-        })
+        data = InitChangeRequest.model_validate(
+            {
+                "dataForNewInstanceVersion": [
+                    {
+                        "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
+                    }
+                ]
+            }
+        )
         # Use mode="json" to get JSON-serializable types from model_dump
         json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
         # Manually call _request to test URL construction
-        resp = resource._request(
+        _ = resource._request(
             "POST",
             f"/MCMInstances({instance_id})/MCMService.initChange",
             json=json_body,
@@ -491,17 +473,13 @@ class TestLifecycleActions:
 
     def test_init_shutdown_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(
-            responses={"MCMService.initShutdown": self._minimal_instance_response()}
-        )
+        transport = _make_mock_transport(responses={"MCMService.initShutdown": self._minimal_instance_response()})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
         from sap_mcm_client.types_actions import InitShutdownRequest
 
-        data = InitShutdownRequest.model_validate({
-            "dataForNewInstanceVersion": [{"changeProcesses": [{}]}]
-        })
+        data = InitShutdownRequest.model_validate({"dataForNewInstanceVersion": [{"changeProcesses": [{}]}]})
         json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
         resource._request(
             "POST",
@@ -515,19 +493,15 @@ class TestLifecycleActions:
 
     def test_init_version_cancel_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(
-            responses={"MCMService.initVersionCancel": self._minimal_instance_response()}
-        )
+        transport = _make_mock_transport(responses={"MCMService.initVersionCancel": self._minimal_instance_response()})
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
 
         from sap_mcm_client.types_actions import InitVersionCancelRequest
 
-        data = InitVersionCancelRequest.model_validate({
-            "dataForNewInstanceVersion": {
-                "changeProcesses": [{"cancellationReason": "test"}]
-            }
-        })
+        data = InitVersionCancelRequest.model_validate(
+            {"dataForNewInstanceVersion": {"changeProcesses": [{"cancellationReason": "test"}]}}
+        )
         json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
         resource._request(
             "POST",
@@ -543,10 +517,12 @@ class TestLifecycleActions:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         melo_id = "11111111-aaaa-bbbb-cccc-000000000001"
         transport = _make_mock_transport(
-            responses={"notifyDeviceRemoved": httpx.Response(
-                status_code=204,
-                request=httpx.Request("POST", "https://example.com"),
-            )}
+            responses={
+                "notifyDeviceRemoved": httpx.Response(
+                    status_code=204,
+                    request=httpx.Request("POST", "https://example.com"),
+                )
+            }
         )
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
@@ -561,10 +537,12 @@ class TestLifecycleActions:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         malo_id = "44444444-aaaa-bbbb-cccc-000000000001"
         transport = _make_mock_transport(
-            responses={"notifyMarketLocationRemoved": httpx.Response(
-                status_code=204,
-                request=httpx.Request("POST", "https://example.com"),
-            )}
+            responses={
+                "notifyMarketLocationRemoved": httpx.Response(
+                    status_code=204,
+                    request=httpx.Request("POST", "https://example.com"),
+                )
+            }
         )
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
@@ -573,16 +551,20 @@ class TestLifecycleActions:
 
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
-        assert f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifyMarketLocationRemoved" in url_str
+        assert (
+            f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifyMarketLocationRemoved" in url_str
+        )
 
     def test_notify_final_data_entry_ready_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         cp_id = "aaaaaaaa-bbbb-cccc-dddd-000000000001"
         transport = _make_mock_transport(
-            responses={"notifyFinalDataEntryReady": httpx.Response(
-                status_code=204,
-                request=httpx.Request("POST", "https://example.com"),
-            )}
+            responses={
+                "notifyFinalDataEntryReady": httpx.Response(
+                    status_code=204,
+                    request=httpx.Request("POST", "https://example.com"),
+                )
+            }
         )
         http_client, base_url = _make_client_with_transport(transport)
         resource = InstanceResource(http_client, base_url)
@@ -604,9 +586,7 @@ class TestClassResource:
 
     def test_list_classes(self) -> None:
         data = _load_json("class_list.json")
-        transport = _make_mock_transport(
-            responses={"/MeasurementConceptClasses": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MeasurementConceptClasses": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = ClassResource(http_client, base_url)
 
@@ -619,9 +599,7 @@ class TestClassResource:
     def test_get_class(self) -> None:
         data = _load_json("class_get.json")
         class_id = "cccccccc-3333-4444-5555-666677778888"
-        transport = _make_mock_transport(
-            responses={f"/MeasurementConceptClasses({class_id})": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={f"/MeasurementConceptClasses({class_id})": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = ClassResource(http_client, base_url)
 
@@ -632,9 +610,7 @@ class TestClassResource:
 
     def test_list_classes_with_division_filter(self) -> None:
         data = _load_json("class_list.json")
-        transport = _make_mock_transport(
-            responses={"/MeasurementConceptClasses": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MeasurementConceptClasses": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = ClassResource(http_client, base_url)
 
@@ -656,9 +632,7 @@ class TestModelResource:
 
     def test_list_models(self) -> None:
         data = _load_json("model_list.json")
-        transport = _make_mock_transport(
-            responses={"/MeasurementConceptModels": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={"/MeasurementConceptModels": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = ModelResource(http_client, base_url)
 
@@ -670,9 +644,7 @@ class TestModelResource:
     def test_get_model(self) -> None:
         data = _load_json("model_get.json")
         model_id = "ffffffff-2222-2222-2222-100000000001"
-        transport = _make_mock_transport(
-            responses={f"/MeasurementConceptModels({model_id})": _json_response(data)}
-        )
+        transport = _make_mock_transport(responses={f"/MeasurementConceptModels({model_id})": _json_response(data)})
         http_client, base_url = _make_client_with_transport(transport)
         resource = ModelResource(http_client, base_url)
 
@@ -686,9 +658,7 @@ class TestModelResource:
 
     def test_model_401_raises(self) -> None:
         error_data = _load_json("error_401.json")
-        transport = _make_mock_transport(
-            default_response=_json_response(error_data, 401)
-        )
+        transport = _make_mock_transport(default_response=_json_response(error_data, 401))
         http_client, base_url = _make_client_with_transport(transport)
         resource = ModelResource(http_client, base_url)
 

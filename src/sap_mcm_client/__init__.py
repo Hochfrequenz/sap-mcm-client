@@ -1,6 +1,8 @@
 """Typed Python client for the SAP Cloud for Utilities Foundation MCM APIs."""
 
 # Client
+# Auth errors
+from sap_mcm_client._auth import MCMAuthError
 from sap_mcm_client._client import MCMClient
 
 # Errors
@@ -11,9 +13,6 @@ from sap_mcm_client._errors import (
     MCMNotFoundError,
     MCMValidationError,
 )
-
-# Auth errors
-from sap_mcm_client._auth import MCMAuthError
 
 # OData response container
 from sap_mcm_client._odata import ListResponse
@@ -29,14 +28,29 @@ from sap_mcm_client.enums import (
     MarketLocationType,
     MarketLocationUsage,
     MeasuringType,
-    MeteringLocationType,
     MeteringLocationPurpose,
+    MeteringLocationType,
     MeteringProcedure,
     MeteringTaskType,
     ModelStatus,
     OverallStatus,
     ProcessType,
     Rate,
+)
+
+# Action request types
+from sap_mcm_client.types_actions import (
+    InitChangeRequest,
+    InitMergeRequest,
+    InitShutdownRequest,
+    InitVersionCancelRequest,
+)
+
+# Class types
+from sap_mcm_client.types_class import (
+    ClassActor,
+    ClassMeteringLocation,
+    MeasurementConceptClass,
 )
 
 # Common types
@@ -71,13 +85,6 @@ from sap_mcm_client.types_instance import (
     OperandMappingUpdate,
 )
 
-# Class types
-from sap_mcm_client.types_class import (
-    ClassActor,
-    ClassMeteringLocation,
-    MeasurementConceptClass,
-)
-
 # Model types
 from sap_mcm_client.types_model import (
     MeasurementConceptModel,
@@ -91,14 +98,6 @@ from sap_mcm_client.types_model import (
     ModelMeteringProcedure,
     ModelMeteringTask,
     ModelOperandMapping,
-)
-
-# Action request types
-from sap_mcm_client.types_actions import (
-    InitChangeRequest,
-    InitMergeRequest,
-    InitShutdownRequest,
-    InitVersionCancelRequest,
 )
 
 # Process data types

@@ -38,7 +38,7 @@ func newTestTokenServer(t *testing.T, token string, expiresIn int) (*httptest.Se
 			TokenType:   "bearer",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	return srv, &callCount
 }
@@ -96,7 +96,7 @@ func TestTokenSourceRefreshOnExpiry(t *testing.T) {
 			TokenType:   "bearer",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -134,7 +134,7 @@ func TestTokenSourceRefreshWhenNearExpiry(t *testing.T) {
 			TokenType:   "bearer",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -163,7 +163,7 @@ func TestTokenSourceRefreshWhenNearExpiry(t *testing.T) {
 func TestTokenSourceErrorOnFetchFailure(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("internal error"))
+		_, _ = w.Write([]byte("internal error"))
 	}))
 	defer srv.Close()
 
@@ -186,7 +186,7 @@ func TestTokenSourceErrorOnEmptyAccessToken(t *testing.T) {
 			TokenType:   "bearer",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -237,7 +237,7 @@ func TestAuthTransportAddsBearer(t *testing.T) {
 	client := &http.Client{Transport: transport}
 	resp, err := client.Get(apiSrv.URL)
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	assert.Equal(t, "Bearer bearer-test-token", receivedAuth)
 }

@@ -1,6 +1,6 @@
 module github.com/Hochfrequenz/mkv-api-client
 
-go 1.26
+go 1.25
 
 require github.com/stretchr/testify v1.11.1
 

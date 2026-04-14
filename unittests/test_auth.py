@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
 import time
-from typing import Any
 from unittest.mock import patch
 
 import httpx
@@ -44,7 +42,7 @@ def _make_token_transport(
         responses = [_make_token_response()]
     call_index = {"i": 0}
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx.Request) -> httpx.Response:  # pylint: disable=unused-argument
         idx = call_index["i"]
         call_index["i"] += 1
         if idx < len(responses):
@@ -60,7 +58,7 @@ class TestOAuth2ClientCredentials:
 
     def test_token_fetched_on_first_request(self) -> None:
         """A bearer token is fetched the first time auth_flow runs."""
-        transport = _make_token_transport()
+        _ = _make_token_transport()
 
         auth = OAuth2ClientCredentials(TOKEN_URL, CLIENT_ID, CLIENT_SECRET)
 

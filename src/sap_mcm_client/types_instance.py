@@ -13,16 +13,15 @@ from sap_mcm_client.enums import (
     Direction,
     Division,
     MarketLocationUsage,
-    MeteringLocationType,
     MeteringLocationPurpose,
+    MeteringLocationType,
     MeteringProcedure,
     MeteringTaskType,
     OverallStatus,
     ProcessType,
 )
-from sap_mcm_client.types_common import Address, Ancestor, MCMBaseModel, MCMRequestModel, StatusEntry
+from sap_mcm_client.types_common import Address, MCMBaseModel, MCMRequestModel, StatusEntry
 from sap_mcm_client.types_process_data import InstanceProcessData
-
 
 # ---------------------------------------------------------------------------
 # Frozen response models
@@ -549,7 +548,7 @@ class MeasurementConceptInstance(MCMBaseModel):
     orderer_code: str | None = Field(
         None,
         max_length=40,
-        description="The code representing the orderer of the measurement concept instance, who is the party who initates the creation of the measurement concept instance. The order can be, for example, a DSO, uniquely identified by a number from the Market Master Data Register.",
+        description="The code representing the orderer of the measurement concept instance, who is the party who initiates the creation of the measurement concept instance. The order can be, for example, a DSO, uniquely identified by a number from the Market Master Data Register.",
     )
     leading_address_id: UUID | None = Field(
         None,
@@ -675,7 +674,7 @@ class MeasurementConceptInstanceCreate(MCMRequestModel):
     orderer_code: str | None = Field(
         None,
         max_length=40,
-        description="The code representing the orderer of the measurement concept instance, who is the party who initates the creation of the measurement concept instance. The order can be, for example, a DSO, uniquely identified by a number from the Market Master Data Register.",
+        description="The code representing the orderer of the measurement concept instance, who is the party who initiates the creation of the measurement concept instance. The order can be, for example, a DSO, uniquely identified by a number from the Market Master Data Register.",
     )
     addresses: list[Address] | None = Field(
         None,

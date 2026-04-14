@@ -11,7 +11,6 @@ from pydantic import Field
 from sap_mcm_client.enums import ForecastBasis, MeasuringType, Rate
 from sap_mcm_client.types_common import MCMBaseModel, MCMRequestModel
 
-
 # ---------------------------------------------------------------------------
 # Frozen response models
 # ---------------------------------------------------------------------------
@@ -171,7 +170,7 @@ class MeteringLocationPD(MCMBaseModel):
     )
     classification: str | None = Field(
         None,
-        description="The classification of the metering location such as household, streetlight, shop, and restuarant.",
+        description="The classification of the metering location such as household, streetlight, shop, and restaurant.",
     )
     measuring_type_code: MeasuringType | None = Field(
         None,
@@ -379,7 +378,7 @@ class MeteringLocationPDUpdate(MCMRequestModel):
 
     classification: str | None = Field(
         None,
-        description="The classification of the metering location such as household, streetlight, shop, and restuarant.",
+        description="The classification of the metering location such as household, streetlight, shop, and restaurant.",
     )
     note: str | None = Field(
         None,

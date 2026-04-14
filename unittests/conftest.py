@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -13,7 +13,7 @@ TESTDATA = Path(__file__).resolve().parent.parent / "testdata"
 
 def _load_json(name: str) -> dict[str, Any]:
     """Load a JSON fixture from the testdata directory."""
-    return json.loads((TESTDATA / name).read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads((TESTDATA / name).read_text(encoding="utf-8")))
 
 
 @pytest.fixture()

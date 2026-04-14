@@ -9,7 +9,6 @@ from pydantic import Field
 
 from sap_mcm_client.types_common import MCMRequestModel
 
-
 # ---------------------------------------------------------------------------
 # Shared nested types for action requests
 # ---------------------------------------------------------------------------

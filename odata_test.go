@@ -72,7 +72,7 @@ func TestListOptionsQueryParamsFilter(t *testing.T) {
 func TestListOptionsQueryParamsFilterMultiple(t *testing.T) {
 	opts := &ListOptions{
 		Filter: map[string]string{
-			"division_code":    "EL",
+			"division_code":      "EL",
 			"overallStatus_code": "ACTIVE",
 		},
 	}

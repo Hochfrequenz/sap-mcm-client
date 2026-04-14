@@ -113,18 +113,14 @@ class OAuth2ClientCredentials(httpx.Auth):
                 )
                 response.raise_for_status()
         except httpx.HTTPError as exc:
-            raise MCMAuthError(
-                f"Failed to obtain OAuth2 token from {self._token_url}: {exc}"
-            ) from exc
+            raise MCMAuthError(f"Failed to obtain OAuth2 token from {self._token_url}: {exc}") from exc
 
         try:
             payload = response.json()
             access_token: str = payload["access_token"]
             expires_in: int = int(payload["expires_in"])
         except (KeyError, TypeError, ValueError) as exc:
-            raise MCMAuthError(
-                f"Malformed token response from {self._token_url}: {exc}"
-            ) from exc
+            raise MCMAuthError(f"Malformed token response from {self._token_url}: {exc}") from exc
 
         self._token = access_token
         self._expires_at = time.monotonic() + expires_in - self._REFRESH_MARGIN

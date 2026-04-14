@@ -69,7 +69,7 @@ def _parse_odata_error(response: httpx.Response) -> dict[str, Any] | None:
         body = response.json()
         if isinstance(body, dict):
             return body
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         pass
     return None
 
@@ -375,8 +375,7 @@ class InstanceResource:
         """
         self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})"
-            f"/meteringTasks({str(task_id)})",
+            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})" f"/meteringTasks({str(task_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -525,8 +524,7 @@ class InstanceResource:
         """
         self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})"
-            "/MCMService.notifyDeviceRemoved",
+            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})" "/MCMService.notifyDeviceRemoved",
         )
 
     def notify_market_location_removed(

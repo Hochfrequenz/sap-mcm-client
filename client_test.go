@@ -94,7 +94,7 @@ func TestInstancesGet(t *testing.T) {
 		assert.Equal(t, odataAccept, r.Header.Get("Accept"))
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -117,7 +117,7 @@ func TestInstancesList(t *testing.T) {
 		assert.Contains(t, r.URL.RawQuery, "%24expand=")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -137,7 +137,7 @@ func TestInstancesListNilOpts(t *testing.T) {
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -167,7 +167,7 @@ func TestInstancesCreate(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -193,7 +193,7 @@ func TestInstancesInitChange(t *testing.T) {
 		assert.Contains(t, r.URL.Path, "MCMInstances(a1b2c3d4-e5f6-7890-abcd-ef1234567890)/MCMService.initChange")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -212,6 +212,7 @@ func TestInstancesInitChange(t *testing.T) {
 
 // --- Classes integration tests ---
 
+//nolint:dupl // intentional - parallel structure to TestModelsGet for symmetric services
 func TestClassesGet(t *testing.T) {
 	fixture, err := os.ReadFile("testdata/class_get.json")
 	require.NoError(t, err)
@@ -222,7 +223,7 @@ func TestClassesGet(t *testing.T) {
 		assert.Contains(t, r.URL.RawQuery, "$expand=")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -244,7 +245,7 @@ func TestClassesList(t *testing.T) {
 		assert.Contains(t, r.URL.Path, "MeasurementConceptClasses")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -259,6 +260,7 @@ func TestClassesList(t *testing.T) {
 
 // --- Models integration tests ---
 
+//nolint:dupl // intentional - parallel structure to TestClassesGet for symmetric services
 func TestModelsGet(t *testing.T) {
 	fixture, err := os.ReadFile("testdata/model_get.json")
 	require.NoError(t, err)
@@ -269,7 +271,7 @@ func TestModelsGet(t *testing.T) {
 		assert.Contains(t, r.URL.RawQuery, "$expand=")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -291,7 +293,7 @@ func TestModelsList(t *testing.T) {
 		assert.Contains(t, r.URL.Path, "MeasurementConceptModels")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -313,7 +315,7 @@ func TestErrorResponse404(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		w.Write(errFixture)
+		_, _ = w.Write(errFixture)
 	}))
 	defer srv.Close()
 
@@ -339,7 +341,7 @@ func TestErrorResponse403(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusForbidden)
-		w.Write(errFixture)
+		_, _ = w.Write(errFixture)
 	}))
 	defer srv.Close()
 
@@ -364,7 +366,7 @@ func TestErrorResponse401(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(errFixture)
+		_, _ = w.Write(errFixture)
 	}))
 	defer srv.Close()
 
@@ -383,7 +385,7 @@ func TestErrorResponse401(t *testing.T) {
 func TestErrorResponsePlainText(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal Server Error"))
+		_, _ = w.Write([]byte("Internal Server Error"))
 	}))
 	defer srv.Close()
 
@@ -402,7 +404,7 @@ func TestRequestHeaders(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, odataAccept, r.Header.Get("Accept"))
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"value":[]}`))
+		_, _ = w.Write([]byte(`{"value":[]}`))
 	}))
 	defer srv.Close()
 
@@ -417,7 +419,7 @@ func TestPostRequestContentType(t *testing.T) {
 			assert.Equal(t, odataContentType, r.Header.Get("Content-Type"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}))
 	defer srv.Close()
 
@@ -437,7 +439,7 @@ func TestInstancesUpdate(t *testing.T) {
 		assert.Contains(t, r.URL.Path, "MCMInstances(test-id)")
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -523,7 +525,7 @@ func TestInstancesInitMerge(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Contains(t, r.URL.Path, "MCMService.initMerge")
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -549,7 +551,7 @@ func TestInstancesInitShutdown(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Contains(t, r.URL.Path, "MCMService.initShutdown")
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -571,7 +573,7 @@ func TestInstancesInitVersionCancel(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Contains(t, r.URL.Path, "MCMService.initVersionCancel")
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 
@@ -632,7 +634,7 @@ func TestListWithFilterOption(t *testing.T) {
 		assert.True(t, strings.Contains(query, "%24filter=") || strings.Contains(query, "$filter="),
 			"expected $filter in query: %s", query)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fixture)
+		_, _ = w.Write(fixture)
 	}))
 	defer srv.Close()
 

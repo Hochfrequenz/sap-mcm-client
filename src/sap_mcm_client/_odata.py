@@ -92,7 +92,7 @@ MODEL_EXPAND_MAP: dict[str, str | None] = {
 # ---------------------------------------------------------------------------
 
 
-def build_expand(
+def build_expand(  # pylint: disable=dangerous-default-value
     include: Sequence[str] | None,
     expand_map: dict[str, str | None] = INSTANCE_EXPAND_MAP,
 ) -> str | None:

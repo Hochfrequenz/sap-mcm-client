@@ -88,7 +88,9 @@ class Address(MCMBaseModel):
         None, description="The universally unique identifier (UUID) of the measurement concept instance."
     )
     country_code: str | None = Field(
-        None, max_length=3, description="The code representing the country/region in which the measurement concept is instantiated."
+        None,
+        max_length=3,
+        description="The code representing the country/region in which the measurement concept is instantiated.",
     )
     city_id: str | None = Field(
         None, max_length=12, description="The city ID for which the measurement concept is instantiated."
@@ -136,15 +138,21 @@ class StatusEntry(MCMBaseModel):
     change_process_id: UUID | None = Field(
         None, description="The universally unique identifier (UUID) of the change process."
     )
-    instance_status_code: str | None = Field(None, max_length=12, description="The status code of the measurement concept instance.")
-    process_status_code: str | None = Field(None, max_length=30, description="The process status code of the measurement concept instance.")
+    instance_status_code: str | None = Field(
+        None, max_length=12, description="The status code of the measurement concept instance."
+    )
+    process_status_code: str | None = Field(
+        None, max_length=30, description="The process status code of the measurement concept instance."
+    )
 
 
 class Ancestor(MCMBaseModel):
     """A reference to an ancestor (previous version) of a measurement concept instance."""
 
     id: UUID = Field(description="The universally unique identifier (UUID) of the ancestor instance.")
-    id_text: str | None = Field(None, max_length=60, description="The human-readable identifier of the ancestor instance.")
+    id_text: str | None = Field(
+        None, max_length=60, description="The human-readable identifier of the ancestor instance."
+    )
 
 
 class MCMRequestModel(BaseModel):

@@ -1,2 +1,5 @@
+[FORMAT]
+max-line-length=120
+
 [MESSAGES CONTROL]
-disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,too-few-public-methods,redefined-outer-name,duplicate-code
+disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,too-few-public-methods,redefined-outer-name,duplicate-code,line-too-long,protected-access,import-outside-toplevel,use-implicit-booleaness-not-comparison
