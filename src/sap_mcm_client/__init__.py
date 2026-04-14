@@ -113,6 +113,31 @@ from sap_mcm_client.types_process_data import (
     MeteringTaskPDUpdate,
 )
 
+# Migration resource / types
+from sap_mcm_client._resources import MigrationResource, TimeSeriesResource
+from sap_mcm_client.types_migration import (
+    MigrationActor,
+    MigrationAddress,
+    MigrationCalculationRule,
+    MigrationChangeProcess,
+    MigrationInstance,
+    MigrationInstanceResponse,
+    MigrationInstancesRequest,
+    MigrationMarketLocation,
+    MigrationMarketLocationActor,
+    MigrationMarketLocationUsage,
+    MigrationMeteringLocation,
+    MigrationMeteringTask,
+    MigrationOperandMapping,
+    MigrationResponse,
+    MigrationStatus,
+    StagedMigrationInstance,
+)
+from sap_mcm_client.types_timeseries import (
+    DeleteTimeSeriesRequest,
+    TimeSeriesDataPoint,
+)
+
 __all__ = [
     # Client
     "MCMClient",
@@ -200,4 +225,26 @@ __all__ = [
     "MeteringLocationPDUpdate",
     "MeteringTaskPD",
     "MeteringTaskPDUpdate",
+    # Migration
+    "MigrationResource",
+    "MigrationActor",
+    "MigrationAddress",
+    "MigrationCalculationRule",
+    "MigrationChangeProcess",
+    "MigrationInstance",
+    "MigrationInstanceResponse",
+    "MigrationInstancesRequest",
+    "MigrationMarketLocation",
+    "MigrationMarketLocationActor",
+    "MigrationMarketLocationUsage",
+    "MigrationMeteringLocation",
+    "MigrationMeteringTask",
+    "MigrationOperandMapping",
+    "MigrationResponse",
+    "MigrationStatus",
+    "StagedMigrationInstance",
+    # Time series
+    "TimeSeriesResource",
+    "TimeSeriesDataPoint",
+    "DeleteTimeSeriesRequest",
 ]
