@@ -84,7 +84,7 @@ func TestNewClientTrailingSlash(t *testing.T) {
 // --- Instances integration tests ---
 
 func TestInstancesGet(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +107,7 @@ func TestInstancesGet(t *testing.T) {
 }
 
 func TestInstancesList(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_list.json")
+	fixture, err := os.ReadFile("../testdata/instance_list.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +132,7 @@ func TestInstancesList(t *testing.T) {
 }
 
 func TestInstancesListNilOpts(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_list.json")
+	fixture, err := os.ReadFile("../testdata/instance_list.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,7 @@ func TestInstancesListNilOpts(t *testing.T) {
 }
 
 func TestInstancesCreate(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +185,7 @@ func TestInstancesCreate(t *testing.T) {
 }
 
 func TestInstancesInitChange(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -214,7 +214,7 @@ func TestInstancesInitChange(t *testing.T) {
 
 //nolint:dupl // intentional - parallel structure to TestModelsGet for symmetric services
 func TestClassesGet(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/class_get.json")
+	fixture, err := os.ReadFile("../testdata/class_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +237,7 @@ func TestClassesGet(t *testing.T) {
 }
 
 func TestClassesList(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/class_list.json")
+	fixture, err := os.ReadFile("../testdata/class_list.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +262,7 @@ func TestClassesList(t *testing.T) {
 
 //nolint:dupl // intentional - parallel structure to TestClassesGet for symmetric services
 func TestModelsGet(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/model_get.json")
+	fixture, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -285,7 +285,7 @@ func TestModelsGet(t *testing.T) {
 }
 
 func TestModelsList(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/model_list.json")
+	fixture, err := os.ReadFile("../testdata/model_list.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -309,7 +309,7 @@ func TestModelsList(t *testing.T) {
 // --- Error response tests ---
 
 func TestErrorResponse404(t *testing.T) {
-	errFixture, err := os.ReadFile("testdata/error_404.json")
+	errFixture, err := os.ReadFile("../testdata/error_404.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -335,7 +335,7 @@ func TestErrorResponse404(t *testing.T) {
 }
 
 func TestErrorResponse403(t *testing.T) {
-	errFixture, err := os.ReadFile("testdata/error_403.json")
+	errFixture, err := os.ReadFile("../testdata/error_403.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -360,7 +360,7 @@ func TestErrorResponse403(t *testing.T) {
 }
 
 func TestErrorResponse401(t *testing.T) {
-	errFixture, err := os.ReadFile("testdata/error_401.json")
+	errFixture, err := os.ReadFile("../testdata/error_401.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -431,7 +431,7 @@ func TestPostRequestContentType(t *testing.T) {
 }
 
 func TestInstancesUpdate(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -518,7 +518,7 @@ func TestInstancesUpdateOperandMapping(t *testing.T) {
 }
 
 func TestInstancesInitMerge(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -544,7 +544,7 @@ func TestInstancesInitMerge(t *testing.T) {
 }
 
 func TestInstancesInitShutdown(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -566,7 +566,7 @@ func TestInstancesInitShutdown(t *testing.T) {
 }
 
 func TestInstancesInitVersionCancel(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_get.json")
+	fixture, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -625,7 +625,7 @@ func TestInstancesNotifyFinalDataEntryReady(t *testing.T) {
 }
 
 func TestListWithFilterOption(t *testing.T) {
-	fixture, err := os.ReadFile("testdata/instance_list.json")
+	fixture, err := os.ReadFile("../testdata/instance_list.json")
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

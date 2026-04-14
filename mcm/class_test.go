@@ -10,7 +10,7 @@ import (
 )
 
 func TestParseClassGet(t *testing.T) {
-	data, err := os.ReadFile("testdata/class_get.json")
+	data, err := os.ReadFile("../testdata/class_get.json")
 	require.NoError(t, err)
 
 	var cls MeasurementConceptClass
@@ -48,7 +48,7 @@ func TestParseClassGet(t *testing.T) {
 }
 
 func TestParseClassGetMeteringLocations(t *testing.T) {
-	data, err := os.ReadFile("testdata/class_get.json")
+	data, err := os.ReadFile("../testdata/class_get.json")
 	require.NoError(t, err)
 
 	var cls MeasurementConceptClass
@@ -82,7 +82,7 @@ func TestParseClassGetMeteringLocations(t *testing.T) {
 }
 
 func TestParseClassGetActors(t *testing.T) {
-	data, err := os.ReadFile("testdata/class_get.json")
+	data, err := os.ReadFile("../testdata/class_get.json")
 	require.NoError(t, err)
 
 	var cls MeasurementConceptClass
@@ -117,7 +117,7 @@ func TestParseClassGetActors(t *testing.T) {
 }
 
 func TestParseClassListCollection(t *testing.T) {
-	data, err := os.ReadFile("testdata/class_list.json")
+	data, err := os.ReadFile("../testdata/class_list.json")
 	require.NoError(t, err)
 
 	resp, err := parseODataCollection[MeasurementConceptClass](data)

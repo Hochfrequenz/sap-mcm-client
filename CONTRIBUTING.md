@@ -25,7 +25,7 @@ tox -e tests linting type_check coverage spell_check
 black . && isort .
 
 # Go
-go test ./...
+go test ./mcm/...
 golangci-lint run --enable dupl,goconst,gocyclo
 ```
 
@@ -68,7 +68,7 @@ Recorded responses are committed (they're business data, not secrets). Only `.en
 
 ## Adding a new Go struct
 
-1. Add the struct to the appropriate `*.go` file at the repo root.
+1. Add the struct to the appropriate `*.go` file under `mcm/`.
 2. Use pointer types (`*string`, `*int`, `*bool`) for nullable fields, non-pointer for required fields.
 3. JSON tags must exactly match the OData wire format (camelCase with `_code` / `_id` suffixes).
 4. Use `*Decimal` for decimal fields, `*time.Time` for datetime, `*string` for date-only.

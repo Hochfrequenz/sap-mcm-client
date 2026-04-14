@@ -145,7 +145,7 @@ func TestDefaultModelExpandNonEmpty(t *testing.T) {
 }
 
 func TestParseODataCollectionInstanceList(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_list.json")
+	data, err := os.ReadFile("../testdata/instance_list.json")
 	require.NoError(t, err)
 
 	resp, err := parseODataCollection[MeasurementConceptInstance](data)

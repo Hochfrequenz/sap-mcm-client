@@ -10,7 +10,7 @@ import (
 )
 
 func TestParseInstanceGet(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -58,7 +58,7 @@ func TestParseInstanceGet(t *testing.T) {
 }
 
 func TestParseInstanceGetMeteringLocations(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -102,7 +102,7 @@ func TestParseInstanceGetMeteringLocations(t *testing.T) {
 }
 
 func TestParseInstanceGetMeteringTasks(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -144,7 +144,7 @@ func TestParseInstanceGetMeteringTasks(t *testing.T) {
 }
 
 func TestParseInstanceGetMarketLocations(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -176,7 +176,7 @@ func TestParseInstanceGetMarketLocations(t *testing.T) {
 }
 
 func TestParseInstanceGetCalculationRules(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -219,7 +219,7 @@ func TestParseInstanceGetCalculationRules(t *testing.T) {
 }
 
 func TestParseInstanceGetActors(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -247,7 +247,7 @@ func TestParseInstanceGetActors(t *testing.T) {
 }
 
 func TestParseInstanceGetAddresses(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -285,7 +285,7 @@ func TestParseInstanceGetAddresses(t *testing.T) {
 }
 
 func TestParseInstanceGetChangeProcesses(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -355,7 +355,7 @@ func TestParseInstanceGetChangeProcesses(t *testing.T) {
 }
 
 func TestParseInstanceGetStatus(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -373,7 +373,7 @@ func TestParseInstanceGetStatus(t *testing.T) {
 }
 
 func TestParseInstanceGetOperandMappings(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_get.json")
+	data, err := os.ReadFile("../testdata/instance_get.json")
 	require.NoError(t, err)
 
 	var inst MeasurementConceptInstance
@@ -393,7 +393,7 @@ func TestParseInstanceGetOperandMappings(t *testing.T) {
 }
 
 func TestParseInstanceListCollection(t *testing.T) {
-	data, err := os.ReadFile("testdata/instance_list.json")
+	data, err := os.ReadFile("../testdata/instance_list.json")
 	require.NoError(t, err)
 
 	resp, err := parseODataCollection[MeasurementConceptInstance](data)

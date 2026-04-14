@@ -10,7 +10,7 @@ import (
 )
 
 func TestParseModelGet(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_get.json")
+	data, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	var model MeasurementConceptModel
@@ -48,7 +48,7 @@ func TestParseModelGet(t *testing.T) {
 }
 
 func TestParseModelGetExpandedTypes(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_get.json")
+	data, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	var model MeasurementConceptModel
@@ -81,7 +81,7 @@ func TestParseModelGetExpandedTypes(t *testing.T) {
 }
 
 func TestParseModelGetMarketLocations(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_get.json")
+	data, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	var model MeasurementConceptModel
@@ -128,7 +128,7 @@ func TestParseModelGetMarketLocations(t *testing.T) {
 }
 
 func TestParseModelGetOperands(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_get.json")
+	data, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	var model MeasurementConceptModel
@@ -150,7 +150,7 @@ func TestParseModelGetOperands(t *testing.T) {
 }
 
 func TestParseModelGetMeteringLocationPurposes(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_get.json")
+	data, err := os.ReadFile("../testdata/model_get.json")
 	require.NoError(t, err)
 
 	var model MeasurementConceptModel
@@ -168,7 +168,7 @@ func TestParseModelGetMeteringLocationPurposes(t *testing.T) {
 }
 
 func TestParseModelListCollection(t *testing.T) {
-	data, err := os.ReadFile("testdata/model_list.json")
+	data, err := os.ReadFile("../testdata/model_list.json")
 	require.NoError(t, err)
 
 	resp, err := parseODataCollection[MeasurementConceptModel](data)

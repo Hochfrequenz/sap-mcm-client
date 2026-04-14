@@ -80,7 +80,7 @@ import (
     "fmt"
     "log"
 
-    mcm "github.com/Hochfrequenz/mkv-api-client"
+    "github.com/Hochfrequenz/mkv-api-client/mcm"
 )
 
 func main() {
