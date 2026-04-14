@@ -320,7 +320,7 @@ func TestTimeSeriesUploadWithoutUploadID(t *testing.T) {
 		require.NoError(t, r.ParseMultipartForm(1<<20))
 		f, _, err := r.FormFile("file")
 		require.NoError(t, err)
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		buf, _ := io.ReadAll(f)
 		gotFileContent = string(buf)
 

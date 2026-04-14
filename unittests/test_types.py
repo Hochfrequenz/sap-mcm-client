@@ -205,9 +205,7 @@ class TestInstanceParsing:
         assert cp.instance_characteristics is not None
         assert len(cp.instance_characteristics) == 2
         # modelEntityId is plain camelCase, not modelEntity_id
-        assert cp.instance_characteristics[0].model_entity_id == UUID(
-            "bbb50001-5555-5555-5555-501010000001"
-        )
+        assert cp.instance_characteristics[0].model_entity_id == UUID("bbb50001-5555-5555-5555-501010000001")
 
     def test_status_entries(self, instance_get_json: dict[str, Any]) -> None:
         cleaned = {k: v for k, v in instance_get_json.items() if k not in ("@context", "@metadataEtag")}

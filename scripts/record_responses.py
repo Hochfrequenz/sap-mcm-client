@@ -121,8 +121,9 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> None:
         save("class_list", classes)
         class_id = preset_ids.get("class") or first_id(classes)
         if class_id:
-            class_get = get(client, base_url, f"{MCM_PATH}/MeasurementConceptClasses({class_id})",
-                            **{"$expand": CLASS_EXPAND})
+            class_get = get(
+                client, base_url, f"{MCM_PATH}/MeasurementConceptClasses({class_id})", **{"$expand": CLASS_EXPAND}
+            )
             save("class_get", class_get)
         else:
             print("  no classes found, skipping class_get")
@@ -133,8 +134,9 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> None:
         save("model_list", models)
         model_id = preset_ids.get("model") or first_id(models)
         if model_id:
-            model_get = get(client, base_url, f"{MCM_PATH}/MeasurementConceptModels({model_id})",
-                            **{"$expand": MODEL_EXPAND})
+            model_get = get(
+                client, base_url, f"{MCM_PATH}/MeasurementConceptModels({model_id})", **{"$expand": MODEL_EXPAND}
+            )
             save("model_get", model_get)
         else:
             print("  no models found, skipping model_get")
@@ -145,8 +147,9 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> None:
         save("instance_list", instances)
         instance_id = preset_ids.get("instance") or first_id(instances)
         if instance_id:
-            instance_get = get(client, base_url, f"{MCM_PATH}/MCMInstances({instance_id})",
-                               **{"$expand": INSTANCE_EXPAND})
+            instance_get = get(
+                client, base_url, f"{MCM_PATH}/MCMInstances({instance_id})", **{"$expand": INSTANCE_EXPAND}
+            )
             save("instance_get", instance_get)
         else:
             print("  no instances found, skipping instance_get")
@@ -154,8 +157,9 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> None:
         # --- Staged migration instances (read-only, safe to query) ---
         print("recording staged migration instances...")
         try:
-            staged = get(client, base_url, f"{MIGRATION_PATH}/StagedMigrationInstances",
-                         **{"$top": 5, "$count": "true"})
+            staged = get(
+                client, base_url, f"{MIGRATION_PATH}/StagedMigrationInstances", **{"$top": 5, "$count": "true"}
+            )
             save("migration_staged_list", staged)
         except httpx.HTTPStatusError as exc:
             # Forbidden etc. is expected in many tenants — don't abort
