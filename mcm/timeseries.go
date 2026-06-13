@@ -19,8 +19,10 @@ type TimeSeriesDataPoint struct {
 	// CreatedAt is the date and time at which the data point record was created.
 	CreatedAt time.Time `json:"createdAt"`
 	// Value is the measured or calculated value at the given timestamp.
-	// It may be nil when the value is missing.
-	Value *Decimal `json:"value,omitempty"`
+	// It may be nil when the value is missing. The Time Series API defines
+	// this field as a JSON number (Edm.Double), so it uses NumberDecimal,
+	// which marshals to a number literal rather than an IEEE754 string.
+	Value *NumberDecimal `json:"value,omitempty"`
 	// Missing indicates whether the data point's value is missing.
 	Missing bool `json:"missing"`
 	// Quality is the quality indicator for the data point.

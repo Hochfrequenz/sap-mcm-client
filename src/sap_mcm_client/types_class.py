@@ -21,7 +21,7 @@ class ClassMeteringLocation(MCMBaseModel):
     )
     id_text: str | None = Field(
         None,
-        max_length=12,
+        max_length=60,
         description="The text describing the universally unique identifier (UUID) of the metering location.",
     )
     external_code: str | None = Field(
@@ -64,7 +64,7 @@ class ClassActor(MCMBaseModel):
     )
     id_text: str | None = Field(
         None,
-        max_length=12,
+        max_length=60,
         description="The text describing the universally unique identifier (UUID) of the actor.",
     )
     type_code: ActorType | None = Field(
@@ -137,7 +137,7 @@ class MeasurementConceptClass(MCMBaseModel):
     )
     id_text: str | None = Field(
         None,
-        max_length=32,
+        max_length=60,
         description="The text describing the universally unique identifier (UUID) of the measurement concept class.",
     )
     name: str | None = Field(
