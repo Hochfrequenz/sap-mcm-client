@@ -1,4 +1,4 @@
-module github.com/Hochfrequenz/mkv-api-client
+module github.com/Hochfrequenz/sap-mcm-client
 
 go 1.25
 

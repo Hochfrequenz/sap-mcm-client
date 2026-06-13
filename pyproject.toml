@@ -49,8 +49,8 @@ packaging = [
 ]
 
 [project.urls]
-Changelog = "https://github.com/Hochfrequenz/mkv-api-client/releases"
-Homepage = "https://github.com/Hochfrequenz/mkv-api-client"
+Changelog = "https://github.com/Hochfrequenz/sap-mcm-client/releases"
+Homepage = "https://github.com/Hochfrequenz/sap-mcm-client"
 
 [tool.black]
 line-length = 120

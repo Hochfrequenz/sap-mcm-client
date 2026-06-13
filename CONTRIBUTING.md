@@ -1,12 +1,12 @@
-# Contributing to mkv-api-client
+# Contributing to sap-mcm-client
 
 Thanks for your interest! This guide covers the most common contribution workflows.
 
 ## Setup
 
 ```bash
-git clone https://github.com/Hochfrequenz/mkv-api-client.git
-cd mkv-api-client
+git clone https://github.com/Hochfrequenz/sap-mcm-client.git
+cd sap-mcm-client
 
 # Python
 pip install -e ".[tests,linting,type_check,formatting,spell_check]"
