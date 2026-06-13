@@ -133,9 +133,177 @@
           }
         }
       }
+    },
+    "/odata/v4/api/migrate/v1/purge": {
+      "post": {
+        "summary": "Purge staged migration data for a migration request.",
+        "description": "Deletes the staged migration data identified by the given migration request ID.",
+        "tags": ["Migration Instances"],
+        "requestBody": {
+          "description": "The migration request whose staged data is to be purged.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "description": "The universally unique identifier (UUID) of the migration request to purge, as returned by the migrate operation."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "The staged migration data was purged." },
+          "400": { "description": "Invalid Request." },
+          "401": { "description": "Unauthorized." },
+          "403": { "description": "Forbidden." }
+        }
+      }
+    },
+    "/odata/v4/api/migrate/v1/MigrationInstances({instanceId})/MCMMigrationService.checkProgress": {
+      "get": {
+        "summary": "Check the migration progress of a measurement concept instance.",
+        "description": "Returns the migration progress — current and next status plus any failed validations — of the measurement concept instance identified by the given ID.",
+        "tags": ["Migration Instances"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instanceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The migration progress of the measurement concept instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmInstances.ProcessProgress"
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Not Found." }
+        }
+      }
+    },
+    "/odata/v4/api/migrate/v1/MIGChangeProcesses({changeProcessId})/MCMMigrationService.checkProgress": {
+      "get": {
+        "summary": "Check the migration progress of a change process.",
+        "description": "Returns the migration progress — current and next status plus any failed validations — of the change process identified by the given ID.",
+        "tags": ["Migration Instances"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "changeProcessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The migration progress of the change process.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mcmInstances.ProcessProgress"
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Not Found." }
+        }
+      }
     }
   },
   "components": {
+    "schemas": {
+      "mcmInstances.ProcessProgress": {
+        "title": "ProcessProgress",
+        "type": "object",
+        "description": "The migration progress of a measurement concept instance or change process.",
+        "properties": {
+          "changeProcessId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The universally unique identifier (UUID) of the change process."
+          },
+          "instanceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The universally unique identifier (UUID) of the measurement concept instance."
+          },
+          "instanceIdText": {
+            "type": "string",
+            "description": "The human-readable identifier of the measurement concept instance."
+          },
+          "instanceVersion": {
+            "type": "string",
+            "description": "The version of the measurement concept instance."
+          },
+          "currentStatus": {
+            "$ref": "#/components/schemas/mcmInstances.ProcessProgressStatus"
+          },
+          "nextStatus": {
+            "$ref": "#/components/schemas/mcmInstances.ProcessProgressStatus"
+          },
+          "failedValidations": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/mcmInstances.ProcessProgressFailedValidation"
+            },
+            "description": "The validations that failed for the instance or change process, if any."
+          }
+        }
+      },
+      "mcmInstances.ProcessProgressStatus": {
+        "title": "ProcessProgressStatus",
+        "type": "object",
+        "description": "A combined instance- and process-status of a migration progress.",
+        "properties": {
+          "instanceStatus": {
+            "type": "string",
+            "description": "The status code of the measurement concept instance."
+          },
+          "processStatus": {
+            "type": "string",
+            "description": "The process status code of the measurement concept instance."
+          }
+        }
+      },
+      "mcmInstances.ProcessProgressFailedValidation": {
+        "title": "ProcessProgressFailedValidation",
+        "type": "object",
+        "description": "A single validation that failed during migration.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the failed validation."
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The position associated with the failed validation."
+          },
+          "parameters": {
+            "type": "array",
+            "nullable": true,
+            "items": { "type": "string" },
+            "description": "The parameters associated with the failed validation."
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "OAuth2": {
         "type": "oauth2",

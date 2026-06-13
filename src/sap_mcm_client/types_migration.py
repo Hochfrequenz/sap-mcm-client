@@ -13,6 +13,10 @@ All types here are derived from the SAP MCM OpenAPI spec and EDMX metadata
 observed API behavior.
 """
 
+# This module is a single cohesive collection of spec-derived migration DTOs;
+# it legitimately exceeds the default module-length limit.
+# pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -895,6 +899,81 @@ class MigrationInstanceResponse(MCMBaseModel):
     status: MigrationStatus | None = Field(
         None,
         description="The status of the measurement concept instance.",
+    )
+
+
+class ProcessProgressStatus(MCMBaseModel):
+    """A combined instance- and process-status of a migration progress.
+
+    Corresponds to the OData complex type ``ProcessProgressStatus``.
+    """
+
+    instance_status: str | None = Field(
+        None,
+        description="The status code of the measurement concept instance.",
+    )
+    process_status: str | None = Field(
+        None,
+        description="The process status code of the measurement concept instance.",
+    )
+
+
+class ProcessProgressFailedValidation(MCMBaseModel):
+    """A single validation that failed during migration.
+
+    Corresponds to the OData complex type ``ProcessProgressFailedValidation``.
+    """
+
+    name: str | None = Field(
+        None,
+        description="The name of the failed validation.",
+    )
+    position: int | None = Field(
+        None,
+        description="The position associated with the failed validation.",
+    )
+    parameters: list[str] | None = Field(
+        None,
+        description="The parameters associated with the failed validation.",
+    )
+
+
+class ProcessProgress(MCMBaseModel):
+    """The migration progress of a measurement concept instance or change process.
+
+    Returned by the ``checkProgress`` function. Corresponds to the OData complex
+    type ``ProcessProgress``.
+    """
+
+    change_process_id: UUID | None = Field(
+        None,
+        alias="changeProcessId",
+        description="The universally unique identifier (UUID) of the change process.",
+    )
+    instance_id: UUID | None = Field(
+        None,
+        alias="instanceId",
+        description="The universally unique identifier (UUID) of the measurement concept instance.",
+    )
+    instance_id_text: str | None = Field(
+        None,
+        description="The human-readable identifier of the measurement concept instance.",
+    )
+    instance_version: str | None = Field(
+        None,
+        description="The version of the measurement concept instance.",
+    )
+    current_status: ProcessProgressStatus | None = Field(
+        None,
+        description="The current combined status of the instance or change process.",
+    )
+    next_status: ProcessProgressStatus | None = Field(
+        None,
+        description="The next combined status of the instance or change process.",
+    )
+    failed_validations: list[ProcessProgressFailedValidation] | None = Field(
+        None,
+        description="The validations that failed for the instance or change process, if any.",
     )
 
 

@@ -104,6 +104,9 @@ from sap_mcm_client.types_migration import (
     MigrationOperandMapping,
     MigrationResponse,
     MigrationStatus,
+    ProcessProgress,
+    ProcessProgressFailedValidation,
+    ProcessProgressStatus,
     StagedMigrationInstance,
 )
 
@@ -244,6 +247,9 @@ __all__ = [
     "MigrationOperandMapping",
     "MigrationResponse",
     "MigrationStatus",
+    "ProcessProgress",
+    "ProcessProgressFailedValidation",
+    "ProcessProgressStatus",
     "StagedMigrationInstance",
     # Time series
     "TimeSeriesResource",
