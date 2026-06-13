@@ -345,3 +345,88 @@ func TestMigrationListStaged403(t *testing.T) {
 	require.Error(t, err)
 	assert.True(t, IsForbidden(err))
 }
+
+// ---------------------------------------------------------------------------
+// Purge / CheckProgress (issue #24)
+// ---------------------------------------------------------------------------
+
+func TestMigrationPurgePostsRequestID(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotBody []byte
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotBody, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	c := testClientWithTimeSeries(t, srv)
+	require.NoError(t, c.Migration.Purge(context.Background(), "f1343cac-b0ee-42aa-af23-43b1f628f61d"))
+
+	assert.Equal(t, http.MethodPost, gotMethod)
+	assert.Equal(t, "/odata/v4/api/migrate/v1/purge", gotPath)
+
+	var body map[string]any
+	require.NoError(t, json.Unmarshal(gotBody, &body))
+	assert.Equal(t, "f1343cac-b0ee-42aa-af23-43b1f628f61d", body["requestId"])
+}
+
+func TestMigrationCheckProgress(t *testing.T) {
+	var gotMethod, gotPath string
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"changeProcessId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+			"instanceId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+			"instanceIdText": "MIG-INST-LEGACY-001",
+			"instanceVersion": "1",
+			"currentStatus": {"instanceStatus": "STAGED", "processStatus": "IN_PROGRESS"},
+			"nextStatus": {"instanceStatus": "ACTIVE", "processStatus": "DONE"},
+			"failedValidations": [
+				{"name": "missingActor", "position": 2, "parameters": ["actor", "MELO1"]}
+			]
+		}`))
+	}))
+	defer srv.Close()
+
+	c := testClientWithTimeSeries(t, srv)
+	progress, err := c.Migration.CheckProgress(context.Background(), "b2c3d4e5-f6a7-8901-bcde-f12345678901")
+	require.NoError(t, err)
+	require.NotNil(t, progress)
+
+	assert.Equal(t, http.MethodGet, gotMethod)
+	assert.Equal(t, "/odata/v4/api/migrate/v1/MigrationInstances(b2c3d4e5-f6a7-8901-bcde-f12345678901)/MCMMigrationService.checkProgress", gotPath)
+
+	assert.Equal(t, "MIG-INST-LEGACY-001", progress.InstanceIDText)
+	require.NotNil(t, progress.CurrentStatus)
+	require.NotNil(t, progress.CurrentStatus.InstanceStatus)
+	assert.Equal(t, "STAGED", *progress.CurrentStatus.InstanceStatus)
+	require.Len(t, progress.FailedValidations, 1)
+	require.NotNil(t, progress.FailedValidations[0].Name)
+	assert.Equal(t, "missingActor", *progress.FailedValidations[0].Name)
+	assert.Equal(t, []string{"actor", "MELO1"}, progress.FailedValidations[0].Parameters)
+}
+
+func TestMigrationCheckChangeProcessProgress(t *testing.T) {
+	var gotPath string
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"changeProcessId": "aaaaaaaa-bbbb-cccc-dddd-000000000001", "instanceId": "", "instanceIdText": "", "instanceVersion": ""}`))
+	}))
+	defer srv.Close()
+
+	c := testClientWithTimeSeries(t, srv)
+	progress, err := c.Migration.CheckChangeProcessProgress(context.Background(), "aaaaaaaa-bbbb-cccc-dddd-000000000001")
+	require.NoError(t, err)
+	require.NotNil(t, progress)
+
+	assert.Equal(t, "/odata/v4/api/migrate/v1/MIGChangeProcesses(aaaaaaaa-bbbb-cccc-dddd-000000000001)/MCMMigrationService.checkProgress", gotPath)
+	assert.Equal(t, "aaaaaaaa-bbbb-cccc-dddd-000000000001", progress.ChangeProcessID)
+}

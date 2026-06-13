@@ -480,3 +480,53 @@ type StagedMigrationInstance struct {
 	// Instance is the migrated measurement concept instance. Only populated when the request expands "instance".
 	Instance *MigrationInstanceResponse `json:"instance,omitempty"`
 }
+
+// ProcessProgressStatus is a combined instance- and process-status of a
+// migration progress, corresponding to the OData complex type
+// MCMMigrationService.ProcessProgressStatus.
+type ProcessProgressStatus struct {
+	// InstanceStatus is the status code of the measurement concept instance.
+	InstanceStatus *string `json:"instanceStatus,omitempty"`
+	// ProcessStatus is the process status code of the measurement concept instance.
+	ProcessStatus *string `json:"processStatus,omitempty"`
+}
+
+// ProcessProgressFailedValidation is a single validation that failed during
+// migration, corresponding to the OData complex type
+// MCMMigrationService.ProcessProgressFailedValidation.
+type ProcessProgressFailedValidation struct {
+	// Name is the name of the failed validation.
+	Name *string `json:"name,omitempty"`
+	// Position is the position associated with the failed validation.
+	Position *int `json:"position,omitempty"`
+	// Parameters are the parameters associated with the failed validation.
+	Parameters []string `json:"parameters,omitempty"`
+}
+
+// ProcessProgress is the migration progress of a measurement concept instance
+// or change process, returned by the checkProgress function. Corresponds to
+// the OData complex type MCMMigrationService.ProcessProgress.
+type ProcessProgress struct {
+	// ChangeProcessID is the universally unique identifier (UUID) of the change process.
+	ChangeProcessID string `json:"changeProcessId"`
+	// InstanceID is the universally unique identifier (UUID) of the measurement concept instance.
+	InstanceID string `json:"instanceId"`
+	// InstanceIDText is the human-readable identifier of the measurement concept instance.
+	InstanceIDText string `json:"instanceIdText"`
+	// InstanceVersion is the version of the measurement concept instance.
+	InstanceVersion string `json:"instanceVersion"`
+	// CurrentStatus is the current combined status of the instance or change process.
+	CurrentStatus *ProcessProgressStatus `json:"currentStatus,omitempty"`
+	// NextStatus is the next combined status of the instance or change process.
+	NextStatus *ProcessProgressStatus `json:"nextStatus,omitempty"`
+	// FailedValidations are the validations that failed for the instance or change process, if any.
+	FailedValidations []ProcessProgressFailedValidation `json:"failedValidations,omitempty"`
+}
+
+// PurgeRequest is the request body for the migration purge action. It carries
+// the migration request ID whose staged data is to be deleted.
+type PurgeRequest struct {
+	// RequestID is the universally unique identifier (UUID) of the migration
+	// request to purge, as returned by Migrate.
+	RequestID string `json:"requestId"`
+}
