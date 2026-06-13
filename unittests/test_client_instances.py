@@ -473,7 +473,7 @@ class TestLifecycleActions:
         malo_id = "44444444-aaaa-bbbb-cccc-000000000001"
         transport = _make_mock_transport(
             responses={
-                "notifyMarketLocationRemoved": httpx.Response(
+                "notifySingleMarketLocationRemoved": httpx.Response(
                     status_code=204,
                     request=httpx.Request("POST", "https://example.com"),
                 )
@@ -487,7 +487,8 @@ class TestLifecycleActions:
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert (
-            f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifyMarketLocationRemoved" in url_str
+            f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifySingleMarketLocationRemoved"
+            in url_str
         )
 
     def test_notify_final_data_entry_ready_url(self) -> None:

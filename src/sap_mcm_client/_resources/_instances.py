@@ -481,7 +481,7 @@ class InstanceResource:
         self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/marketLocations({str(malo_id)})"
-            "/MCMService.notifyMarketLocationRemoved",
+            "/MCMService.notifySingleMarketLocationRemoved",
         )
 
     def notify_final_data_entry_ready(
