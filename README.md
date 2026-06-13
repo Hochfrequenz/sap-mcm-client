@@ -16,10 +16,10 @@ All five APIs of the [SAP Cloud for Utilities Foundation](https://api.sap.com/pa
 
 | API | Python | Go | Operations | SAP docs |
 |---|---|---|---|---|
-| Measurement Concept Instance | ✅ | ✅ | CRUD + 7 lifecycle actions + 5 sub-entity updates + 3 notifications | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/39d2b485b52c425ba1c5f1121362f239.html?locale=en-US&version=Cloud) · [reference](https://api.sap.com/api/MeasurementConceptInstanceAPI/overview) |
+| Measurement Concept Instance | ✅ | ✅ | CRUD + 4 lifecycle actions + 5 sub-entity updates + 3 notifications | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/964850841e2943659444c83c00f05dcc/39d2b485b52c425ba1c5f1121362f239.html?locale=en-US&version=Cloud) · [reference](https://api.sap.com/api/MeasurementConceptInstanceAPI/overview) |
 | Measurement Concept Class | ✅ | ✅ | Read-only (list + get) | [reference](https://api.sap.com/api/MCMConceptClass/overview) |
 | Measurement Concept Model | ✅ | ✅ | Read-only (list + get) | [reference](https://api.sap.com/api/MCMConceptModel/overview) |
-| Instance Migration | ✅ | ✅ | Batch import: migrate + get + list staged | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/d82eec2df077462f92567971c1279cfa.html?locale=en-US&version=Cloud) |
+| Instance Migration | ✅ | ✅ | Batch import: migrate + get + list staged + purge + check progress | [API guide](https://help.sap.com/docs/Cloud_for_Utilities_Foundation/39a9e8c04a4943b69d6851aefcdf0f4d/d82eec2df077462f92567971c1279cfa.html?locale=en-US&version=Cloud) |
 | Time Series | ✅ | ✅ | 12 read variants + 2 upload + 3 delete | [reference](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) |
 
 Deeper background on the MCM domain itself (Messkonzeptklasse, Messkonzeptmodell, Messkonzeptinstanz):
@@ -114,7 +114,11 @@ func main() {
         log.Fatal(err)
     }
     for _, inst := range instances.Items {
-        fmt.Printf("%s: %v\n", inst.IDText, inst.Description)
+        description := ""
+        if inst.Description != nil {
+            description = *inst.Description
+        }
+        fmt.Printf("%s: %s\n", inst.IDText, description)
     }
 
     // Fetch one instance with full expansion (expansion is automatic on Get)
