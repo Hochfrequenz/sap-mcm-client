@@ -419,7 +419,7 @@
           },
           "version": {
             "type": "string",
-            "maxLength": 5,
+            "maxLength": 2,
             "nullable": true,
             "default": "1",
             "description": "The version of the measurement concept model."
