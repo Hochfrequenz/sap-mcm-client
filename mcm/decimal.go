@@ -64,15 +64,26 @@ func NewNumberDecimal(s string) NumberDecimal {
 	return NumberDecimal{Decimal: NewDecimal(s)}
 }
 
-// MarshalJSON serializes the NumberDecimal as a JSON number. The stored string
-// is emitted verbatim as the number token, which preserves the exact decimal
-// value without the float-rounding errors that converting through float64
-// would introduce (see https://github.com/shopspring/decimal/issues/21).
+// MarshalJSON serializes the NumberDecimal as a JSON number, preserving the
+// exact decimal value without the float-rounding errors that converting
+// through float64 would introduce (see
+// https://github.com/shopspring/decimal/issues/21).
+//
+// The stored string is first validated as a single, well-formed JSON number
+// token (json.Number) rather than emitted verbatim. This rejects values that
+// are not numbers and prevents a malformed or hostile string (e.g.
+// `1.23,"x":true`) from producing invalid JSON or injecting extra content
+// into the surrounding object. The canonical token returned by the parser is
+// what gets emitted.
 func (d NumberDecimal) MarshalJSON() ([]byte, error) {
 	if !d.valid {
 		return []byte("null"), nil
 	}
-	return []byte(d.value), nil
+	var n json.Number
+	if err := json.Unmarshal([]byte(d.value), &n); err != nil {
+		return nil, fmt.Errorf("decimal: %q is not a valid JSON number: %w", d.value, err)
+	}
+	return []byte(n.String()), nil
 }
 
 // UnmarshalJSON deserializes the Decimal from either a JSON string

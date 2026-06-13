@@ -188,3 +188,21 @@ func TestTimeSeriesDataPointValueMarshalsAsNumber(t *testing.T) {
 	assert.Contains(t, string(data), `"value":1.23`)
 	assert.NotContains(t, string(data), `"value":"1.23"`)
 }
+
+func TestNumberDecimalMarshalRejectsInvalidToken(t *testing.T) {
+	// A value that is not a clean JSON number token must not be emitted
+	// verbatim (which would yield invalid JSON or inject content); it errors.
+	for _, bad := range []string{`1.23,"x":true`, "abc", "", "1 2"} {
+		d := NewNumberDecimal(bad)
+		_, err := json.Marshal(d)
+		assert.Error(t, err, "expected error marshaling %q", bad)
+	}
+}
+
+func TestNumberDecimalMarshalNormalizesToken(t *testing.T) {
+	// Surrounding whitespace is normalized away to the canonical number token.
+	d := NewNumberDecimal("  1.23  ")
+	data, err := json.Marshal(d)
+	require.NoError(t, err)
+	assert.Equal(t, "1.23", string(data))
+}
