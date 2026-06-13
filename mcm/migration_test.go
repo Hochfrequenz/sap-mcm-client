@@ -229,3 +229,31 @@ func TestParseMigrationStagedListCollection(t *testing.T) {
 	assert.Nil(t, resp.Items[2].TimeMigrationEnd)
 	assert.Nil(t, resp.Items[2].InstanceOverallStatusCode)
 }
+
+// ---------------------------------------------------------------------------
+// Required foreign-key fields (issue #25)
+// ---------------------------------------------------------------------------
+
+// TestMigrationRequiredForeignKeysAlwaysSerialized verifies that the required
+// (EDMX Nullable="false") foreign-key fields are non-pointer and therefore
+// always emitted in the JSON body, even when left at their zero value — a nil
+// pointer with omitempty would have silently dropped them and produced a
+// structurally invalid request.
+func TestMigrationRequiredForeignKeysAlwaysSerialized(t *testing.T) {
+	addr := MigrationAddress{ID: "addr-1", MeasurementConceptInstanceID: "mci-1"}
+	addrJSON, err := json.Marshal(addr)
+	require.NoError(t, err)
+	assert.Contains(t, string(addrJSON), `"measurementConceptInstance_id":"mci-1"`)
+
+	task := MigrationMeteringTask{ID: "task-1", MeteringLocationID: "melo-1"}
+	taskJSON, err := json.Marshal(task)
+	require.NoError(t, err)
+	assert.Contains(t, string(taskJSON), `"meteringLocation_id":"melo-1"`)
+
+	// Even when the foreign key is left empty, the key is still present
+	// (no omitempty), so the server receives an explicit, if invalid, value
+	// rather than a silently missing field.
+	emptyTask, err := json.Marshal(MigrationMeteringTask{ID: "task-2"})
+	require.NoError(t, err)
+	assert.Contains(t, string(emptyTask), `"meteringLocation_id":""`)
+}
