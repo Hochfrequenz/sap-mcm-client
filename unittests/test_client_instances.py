@@ -451,7 +451,7 @@ class TestLifecycleActions:
         melo_id = "11111111-aaaa-bbbb-cccc-000000000001"
         transport = _make_mock_transport(
             responses={
-                "notifyDeviceRemoved": httpx.Response(
+                "notifySingleDeviceRemoved": httpx.Response(
                     status_code=204,
                     request=httpx.Request("POST", "https://example.com"),
                 )
@@ -464,14 +464,16 @@ class TestLifecycleActions:
 
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
-        assert f"/MCMInstances({instance_id})/meteringLocations({melo_id})/MCMService.notifyDeviceRemoved" in url_str
+        assert (
+            f"/MCMInstances({instance_id})/meteringLocations({melo_id})/MCMService.notifySingleDeviceRemoved" in url_str
+        )
 
     def test_notify_market_location_removed_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         malo_id = "44444444-aaaa-bbbb-cccc-000000000001"
         transport = _make_mock_transport(
             responses={
-                "notifyMarketLocationRemoved": httpx.Response(
+                "notifySingleMarketLocationRemoved": httpx.Response(
                     status_code=204,
                     request=httpx.Request("POST", "https://example.com"),
                 )
@@ -485,7 +487,8 @@ class TestLifecycleActions:
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert (
-            f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifyMarketLocationRemoved" in url_str
+            f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifySingleMarketLocationRemoved"
+            in url_str
         )
 
     def test_notify_final_data_entry_ready_url(self) -> None:
@@ -506,4 +509,4 @@ class TestLifecycleActions:
 
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
-        assert f"/changeProcesses({cp_id})/MCMService.notifyFinalDataEntryReady" in url_str
+        assert f"/changeProcesses({cp_id})/processData/MCMService.notifyFinalDataEntryReady" in url_str

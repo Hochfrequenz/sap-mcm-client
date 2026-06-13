@@ -474,7 +474,7 @@ func TestTimeSeriesDeleteBulk(t *testing.T) {
 	}
 	require.NoError(t, c.TimeSeries.DeleteBulk(context.Background(), req))
 
-	assert.Equal(t, http.MethodPost, gotMethod)
+	assert.Equal(t, http.MethodDelete, gotMethod)
 	assert.Equal(t, "/api/v1/timeseries/delete/bulk", gotPath)
 
 	var body map[string]any

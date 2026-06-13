@@ -321,4 +321,4 @@ class TimeSeriesResource:
         """
         url = self._rest_url("/delete/bulk")
         payload = request.model_dump(by_alias=True, exclude_none=True, mode="json")
-        self._request("POST", url, json=payload)
+        self._request("DELETE", url, json=payload)
