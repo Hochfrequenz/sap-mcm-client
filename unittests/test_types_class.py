@@ -88,12 +88,33 @@ class TestClassParsing:
         assert cls.class_type.updateable is False
 
     def test_id_text_accepts_up_to_60_chars(self) -> None:
-        """The EDMX defines MeasurementConceptClasses.idText as MaxLength=60;
-        values between 33 and 60 characters must validate (regression for the
-        spec's incorrect 32-character limit, issue #26)."""
+        """The EDMX defines idText as MaxLength=60 on the measurement concept
+        class and on its nested metering locations and actors; values between
+        33 and 60 characters must validate on all three (regression for the
+        spec's incorrect 32/12-character limits, issue #26)."""
         long_id_text = "X" * 60
         cls = MeasurementConceptClass.model_validate(
-            {"id": "cccccccc-3333-4444-5555-666677778888", "idText": long_id_text}
+            {
+                "id": "cccccccc-3333-4444-5555-666677778888",
+                "idText": long_id_text,
+                "meteringLocations": [
+                    {
+                        "id": "11111111-aaaa-bbbb-cccc-000000000001",
+                        "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+                        "idText": long_id_text,
+                    }
+                ],
+                "actors": [
+                    {
+                        "id": "22222222-aaaa-bbbb-cccc-000000000001",
+                        "measurementConceptClass_id": "cccccccc-3333-4444-5555-666677778888",
+                        "idText": long_id_text,
+                    }
+                ],
+            }
         )
         assert cls.id_text == long_id_text
->>>>>>> f697d74 (fix: correct MCC idText maxLength to 60 to match EDMX (#26))
+        assert cls.metering_locations is not None
+        assert cls.metering_locations[0].id_text == long_id_text
+        assert cls.actors is not None
+        assert cls.actors[0].id_text == long_id_text
