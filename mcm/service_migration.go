@@ -132,6 +132,60 @@ func (s *MigrationService) ListStaged(ctx context.Context, opts *ListStagedOptio
 	return parseODataCollection[StagedMigrationInstance](body)
 }
 
+// Purge deletes the staged migration data identified by the given migration
+// request ID (as returned by Migrate).
+//
+// Corresponds to POST /odata/v4/api/migrate/v1/purge.
+func (s *MigrationService) Purge(ctx context.Context, requestID string) error {
+	payload := PurgeRequest{RequestID: requestID}
+
+	req, err := s.client.newAbsoluteRequest(ctx, http.MethodPost, s.url("purge"), &payload)
+	if err != nil {
+		return err
+	}
+	return s.client.do(req, nil)
+}
+
+// CheckProgress returns the migration progress of the measurement concept
+// instance identified by instanceID.
+//
+// Corresponds to GET
+// /odata/v4/api/migrate/v1/MigrationInstances({id})/MCMMigrationService.checkProgress.
+func (s *MigrationService) CheckProgress(ctx context.Context, instanceID string) (*ProcessProgress, error) {
+	path := fmt.Sprintf("MigrationInstances(%s)/MCMMigrationService.checkProgress", instanceID)
+
+	req, err := s.client.newAbsoluteRequest(ctx, http.MethodGet, s.url(path), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result ProcessProgress
+	if err := s.client.do(req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CheckChangeProcessProgress returns the migration progress of the change
+// process identified by changeProcessID.
+//
+// Corresponds to GET
+// /odata/v4/api/migrate/v1/MIGChangeProcesses({id})/MCMMigrationService.checkProgress.
+func (s *MigrationService) CheckChangeProcessProgress(ctx context.Context, changeProcessID string) (*ProcessProgress, error) {
+	path := fmt.Sprintf("MIGChangeProcesses(%s)/MCMMigrationService.checkProgress", changeProcessID)
+
+	req, err := s.client.newAbsoluteRequest(ctx, http.MethodGet, s.url(path), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result ProcessProgress
+	if err := s.client.do(req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // defaultMigrationExpand returns the full $expand string for migration
 // instances, mirroring the expansions documented in the Migration API spec.
 func defaultMigrationExpand() string {

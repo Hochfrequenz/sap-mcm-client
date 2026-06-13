@@ -162,6 +162,68 @@ class TestMigrationResource:
         assert "$top=5" in url
         assert "$count=true" in url
 
+    def test_purge_posts_request_id(self) -> None:
+        transport = _make_mock_transport(
+            responses={"/purge": _json_response({}, 204)},
+        )
+        resource = MigrationResource(_make_http_client(transport), BASE_URL)
+
+        request_id = UUID("f1343cac-b0ee-42aa-af23-43b1f628f61d")
+        resource.purge(request_id)
+
+        captured = transport._captured_requests  # type: ignore[attr-defined]
+        assert captured[0].method == "POST"
+        url = _decoded_url(captured[0])
+        assert "/odata/v4/api/migrate/v1/purge" in url
+        assert json.loads(captured[0].content) == {"requestId": str(request_id)}
+
+    def test_check_progress_parses_response(self) -> None:
+        progress_data = {
+            "changeProcessId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+            "instanceId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+            "instanceIdText": "MIG-INST-LEGACY-001",
+            "instanceVersion": "1",
+            "currentStatus": {"instanceStatus": "STAGED", "processStatus": "IN_PROGRESS"},
+            "nextStatus": {"instanceStatus": "ACTIVE", "processStatus": "DONE"},
+            "failedValidations": [{"name": "missingActor", "position": 2, "parameters": ["actor", "MELO1"]}],
+        }
+        transport = _make_mock_transport(responses={"checkProgress": _json_response(progress_data)})
+        resource = MigrationResource(_make_http_client(transport), BASE_URL)
+
+        instance_id = UUID("b2c3d4e5-f6a7-8901-bcde-f12345678901")
+        progress = resource.check_progress(instance_id)
+
+        captured = transport._captured_requests  # type: ignore[attr-defined]
+        assert captured[0].method == "GET"
+        url = _decoded_url(captured[0])
+        assert f"/MigrationInstances({instance_id})/MCMMigrationService.checkProgress" in url
+
+        assert progress.instance_id == instance_id
+        assert progress.instance_id_text == "MIG-INST-LEGACY-001"
+        assert progress.current_status is not None
+        assert progress.current_status.instance_status == "STAGED"
+        assert progress.failed_validations is not None
+        assert progress.failed_validations[0].name == "missingActor"
+        assert progress.failed_validations[0].parameters == ["actor", "MELO1"]
+
+    def test_check_change_process_progress_builds_url(self) -> None:
+        progress_data = {
+            "changeProcessId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+            "instanceId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+            "instanceIdText": "MIG-INST-LEGACY-001",
+            "instanceVersion": "1",
+        }
+        transport = _make_mock_transport(responses={"checkProgress": _json_response(progress_data)})
+        resource = MigrationResource(_make_http_client(transport), BASE_URL)
+
+        change_process_id = UUID("aaaaaaaa-bbbb-cccc-dddd-000000000001")
+        progress = resource.check_change_process_progress(change_process_id)
+
+        captured = transport._captured_requests  # type: ignore[attr-defined]
+        url = _decoded_url(captured[0])
+        assert f"/MIGChangeProcesses({change_process_id})/MCMMigrationService.checkProgress" in url
+        assert progress.change_process_id == change_process_id
+
 
 # ===========================================================================
 # Migration error propagation

@@ -21,6 +21,7 @@ from sap_mcm_client.types_migration import (
     MigrationInstance,
     MigrationInstanceResponse,
     MigrationResponse,
+    ProcessProgress,
     StagedMigrationInstance,
 )
 
@@ -189,3 +190,64 @@ class MigrationResource:
 
         resp = self._request("GET", "/StagedMigrationInstances", params=params)
         return parse_collection(resp.json(), StagedMigrationInstance)
+
+    def purge(self, request_id: UUID | str) -> None:
+        """Purge the staged migration data of a migration request.
+
+        Corresponds to ``POST /odata/v4/api/migrate/v1/purge``.  Deletes the
+        staged migration data identified by ``request_id`` (as returned by
+        :meth:`migrate`).
+
+        Parameters
+        ----------
+        request_id:
+            The UUID of the migration request whose staged data should be
+            purged.
+        """
+        self._request("POST", "/purge", json={"requestId": str(request_id)})
+
+    def check_progress(self, instance_id: UUID | str) -> ProcessProgress:
+        """Check the migration progress of a measurement concept instance.
+
+        Corresponds to ``GET /odata/v4/api/migrate/v1/MigrationInstances({id})``
+        ``/MCMMigrationService.checkProgress``.
+
+        Parameters
+        ----------
+        instance_id:
+            The UUID of the migration instance.
+
+        Returns
+        -------
+        ProcessProgress
+            The current and next status of the instance and any failed
+            validations.
+        """
+        resp = self._request(
+            "GET",
+            f"/MigrationInstances({str(instance_id)})/MCMMigrationService.checkProgress",
+        )
+        return parse_entity(resp.json(), ProcessProgress)
+
+    def check_change_process_progress(self, change_process_id: UUID | str) -> ProcessProgress:
+        """Check the migration progress of a change process.
+
+        Corresponds to ``GET /odata/v4/api/migrate/v1/MIGChangeProcesses({id})``
+        ``/MCMMigrationService.checkProgress``.
+
+        Parameters
+        ----------
+        change_process_id:
+            The UUID of the migration change process.
+
+        Returns
+        -------
+        ProcessProgress
+            The current and next status of the change process and any failed
+            validations.
+        """
+        resp = self._request(
+            "GET",
+            f"/MIGChangeProcesses({str(change_process_id)})/MCMMigrationService.checkProgress",
+        )
+        return parse_entity(resp.json(), ProcessProgress)
