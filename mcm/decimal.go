@@ -45,6 +45,36 @@ func (d Decimal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.value)
 }
 
+// NumberDecimal is a decimal that is serialized as a JSON *number* rather
+// than a JSON string. It is used for plain `type: number` fields such as the
+// Time Series measurement value, which the server expects as a number literal
+// (e.g. 1.23), unlike the MCM OData decimals that travel as IEEE754Compatible
+// strings (see Decimal).
+//
+// It embeds Decimal, reusing its string-backed storage and lenient
+// UnmarshalJSON (which accepts both a JSON number and a JSON string), and only
+// overrides MarshalJSON to emit a raw number token.
+type NumberDecimal struct {
+	Decimal
+}
+
+// NewNumberDecimal creates a NumberDecimal from a string representation.
+// The string must be a valid JSON number literal (e.g. "1.23", "-4", "0.0").
+func NewNumberDecimal(s string) NumberDecimal {
+	return NumberDecimal{Decimal: NewDecimal(s)}
+}
+
+// MarshalJSON serializes the NumberDecimal as a JSON number. The stored string
+// is emitted verbatim as the number token, which preserves the exact decimal
+// value without the float-rounding errors that converting through float64
+// would introduce (see https://github.com/shopspring/decimal/issues/21).
+func (d NumberDecimal) MarshalJSON() ([]byte, error) {
+	if !d.valid {
+		return []byte("null"), nil
+	}
+	return []byte(d.value), nil
+}
+
 // UnmarshalJSON deserializes the Decimal from either a JSON string
 // (IEEE754Compatible mode) or a JSON number.
 func (d *Decimal) UnmarshalJSON(data []byte) error {

@@ -126,3 +126,65 @@ func TestDecimalInStruct(t *testing.T) {
 	require.NoError(t, err)
 	assert.JSONEq(t, `{"value":"3.14"}`, string(out))
 }
+
+// ---------------------------------------------------------------------------
+// NumberDecimal (issue #23): serialises as a JSON number, not a string.
+// ---------------------------------------------------------------------------
+
+func TestNumberDecimalMarshalsAsNumber(t *testing.T) {
+	d := NewNumberDecimal("1.23")
+	data, err := json.Marshal(d)
+	require.NoError(t, err)
+	// A number literal, NOT a quoted string.
+	assert.Equal(t, "1.23", string(data))
+}
+
+func TestNumberDecimalMarshalsIntegerAsNumber(t *testing.T) {
+	d := NewNumberDecimal("42")
+	data, err := json.Marshal(d)
+	require.NoError(t, err)
+	assert.Equal(t, "42", string(data))
+}
+
+func TestNumberDecimalZeroMarshalsNull(t *testing.T) {
+	var d NumberDecimal
+	data, err := json.Marshal(d)
+	require.NoError(t, err)
+	assert.Equal(t, "null", string(data))
+}
+
+func TestNumberDecimalUnmarshalsNumberAndString(t *testing.T) {
+	// Accepts a bare JSON number...
+	var fromNumber NumberDecimal
+	require.NoError(t, json.Unmarshal([]byte(`43.125`), &fromNumber))
+	assert.Equal(t, "43.125", fromNumber.String())
+
+	// ...and a JSON string (IEEE754Compatible servers may still send one).
+	var fromString NumberDecimal
+	require.NoError(t, json.Unmarshal([]byte(`"43.125"`), &fromString))
+	assert.Equal(t, "43.125", fromString.String())
+}
+
+func TestNumberDecimalRoundtripPreservesPrecision(t *testing.T) {
+	// High-precision value that float64 could not represent exactly.
+	const precise = "123456789.123456789"
+	d := NewNumberDecimal(precise)
+	data, err := json.Marshal(d)
+	require.NoError(t, err)
+	assert.Equal(t, precise, string(data))
+
+	var back NumberDecimal
+	require.NoError(t, json.Unmarshal(data, &back))
+	assert.Equal(t, precise, back.String())
+}
+
+// TestTimeSeriesDataPointValueMarshalsAsNumber verifies the field in context:
+// a TimeSeriesDataPoint must emit "value" as a JSON number.
+func TestTimeSeriesDataPointValueMarshalsAsNumber(t *testing.T) {
+	v := NewNumberDecimal("1.23")
+	p := TimeSeriesDataPoint{ID: "p1", Value: &v}
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), `"value":1.23`)
+	assert.NotContains(t, string(data), `"value":"1.23"`)
+}
