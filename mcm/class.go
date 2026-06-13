@@ -2,7 +2,7 @@ package mcm
 
 // CodeNameDescription is a reusable struct for code-list expansions
 // that contain a code, name, and description (e.g., division types,
-// class types, direction types).
+// direction types).
 type CodeNameDescription struct {
 	// Code is the identifier code for the entry.
 	Code string `json:"code"`
@@ -10,6 +10,21 @@ type CodeNameDescription struct {
 	Name *string `json:"name,omitempty"`
 	// Descr is the long description of the entry.
 	Descr *string `json:"descr,omitempty"`
+}
+
+// MCClassType is the expanded classType navigation property of a
+// measurement concept class (OData type MCClassTypes). It embeds the
+// code/name/description triple shared with other code-list expansions and
+// adds three capability flags that indicate whether classes of this type may
+// be modified.
+type MCClassType struct {
+	CodeNameDescription
+	// ReadOnly indicates whether measurement concept classes of this type are read-only.
+	ReadOnly *bool `json:"readOnly,omitempty"`
+	// Deletable indicates whether measurement concept classes of this type can be deleted.
+	Deletable *bool `json:"deletable,omitempty"`
+	// Updateable indicates whether measurement concept classes of this type can be updated.
+	Updateable *bool `json:"updateable,omitempty"`
 }
 
 // ClassMeteringLocation represents a metering location within a measurement concept class.
@@ -77,7 +92,7 @@ type MeasurementConceptClass struct {
 	// DivisionCode is the code representing the division of the measurement concept class.
 	DivisionCode *string `json:"division_code,omitempty"`
 	// ClassType is the expanded class type navigation property.
-	ClassType *CodeNameDescription `json:"classType,omitempty"`
+	ClassType *MCClassType `json:"classType,omitempty"`
 	// Division is the expanded division navigation property.
 	Division *CodeNameDescription `json:"division,omitempty"`
 	// MeteringLocations is the list of metering locations in this class.

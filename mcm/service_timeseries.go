@@ -284,7 +284,7 @@ func (s *TimeSeriesService) DeleteBulk(ctx context.Context, req *DeleteTimeSerie
 		return errors.New("timeseries: DeleteBulk requires at least one UUID or external ID")
 	}
 
-	httpReq, err := s.client.newAbsoluteRequest(ctx, http.MethodPost, s.restURL("delete/bulk"), req)
+	httpReq, err := s.client.newAbsoluteRequest(ctx, http.MethodDelete, s.restURL("delete/bulk"), req)
 	if err != nil {
 		return err
 	}

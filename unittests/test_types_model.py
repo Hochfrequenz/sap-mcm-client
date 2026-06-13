@@ -5,6 +5,9 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
+import pytest
+from pydantic import ValidationError
+
 from sap_mcm_client import (
     ClassType,
     ConceptType,
@@ -85,3 +88,12 @@ class TestModelParsing:
 
         assert model.metering_location_purposes is not None
         assert len(model.metering_location_purposes) == 1
+
+    def test_version_max_length_is_two(self) -> None:
+        """The EDMX defines MeasurementConceptModels.version as MaxLength=2;
+        a 2-char value is accepted and a longer one is rejected (regression
+        for the spec's overly permissive 5-character limit, issue #27)."""
+        base = {"id": "ffffffff-2222-2222-2222-100000000001"}
+        assert MeasurementConceptModel.model_validate({**base, "version": "99"}).version == "99"
+        with pytest.raises(ValidationError):
+            MeasurementConceptModel.model_validate({**base, "version": "1.2.3"})

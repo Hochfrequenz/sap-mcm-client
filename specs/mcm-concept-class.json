@@ -658,7 +658,7 @@
             },
             "idText": {
             "type": "string",
-            "maxLength": 32,
+            "maxLength": 60,
             "example": "P_S",
             "nullable": true,
             "description": "The text describing the universally unique identifier (UUID) of the measurement concept class."
@@ -746,6 +746,21 @@
             "nullable": true,
             "description": "The long description of the type of a measurement concept class."
             },
+            "readOnly": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type are read-only."
+            },
+            "deletable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type can be deleted."
+            },
+            "updateable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type can be updated."
+            },
             "code": {
             "type": "string",
             "maxLength": 12,
@@ -801,7 +816,7 @@
             },
             "idText": {
             "type": "string",
-            "maxLength": 12,
+            "maxLength": 60,
             "example": "Z1",
             "nullable": true,
             "description": "The text describing the universally unique identifier (UUID) of the metering location."
@@ -864,7 +879,7 @@
             },
             "idText": {
             "type": "string",
-            "maxLength": 12,
+            "maxLength": 60,
             "example": "VB1",
             "nullable": true,
             "description": "The text describing the universally unique identifier (UUID) of the actor."
