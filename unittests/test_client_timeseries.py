@@ -261,7 +261,7 @@ class TestTimeSeriesDelete:
                 end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
             )
 
-    def test_delete_bulk_posts_body(self) -> None:
+    def test_delete_bulk_sends_delete_with_body(self) -> None:
         transport = _make_mock_transport(
             default_response=httpx.Response(
                 status_code=200,
@@ -281,7 +281,7 @@ class TestTimeSeriesDelete:
         resource.delete_bulk(req)
 
         captured = transport._captured_requests  # type: ignore[attr-defined]
-        assert captured[0].method == "POST"
+        assert captured[0].method == "DELETE"
         url = _decoded_url(captured[0])
         assert "/api/v1/timeseries/delete/bulk" in url
 

@@ -468,7 +468,7 @@ class MeasurementConceptModel(MCMBaseModel):
     )
     version: str | None = Field(
         None,
-        max_length=5,
+        max_length=2,
         description="The version of the measurement concept model.",
     )
     concept_type: CodeDescription | None = Field(

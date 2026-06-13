@@ -8,7 +8,8 @@ type MigrationAddress struct {
 	// ID is the universally unique identifier (UUID) of the object address.
 	ID string `json:"id"`
 	// MeasurementConceptInstanceID is the universally unique identifier (UUID) of the measurement concept instance.
-	MeasurementConceptInstanceID *string `json:"measurementConceptInstance_id,omitempty"`
+	// This foreign key is required (EDMX Nullable="false"), so it is a non-pointer string.
+	MeasurementConceptInstanceID string `json:"measurementConceptInstance_id"`
 	// CountryCode is the code representing the country/region in which the measurement concept is instantiated.
 	CountryCode *string `json:"country_code,omitempty"`
 	// CityID is the city ID for which the measurement concept is instantiated.
@@ -49,7 +50,8 @@ type MigrationMeteringTask struct {
 	// ID is the universally unique identifier (UUID) of the metering task.
 	ID string `json:"id"`
 	// MeteringLocationID is the universally unique identifier (UUID) of the metering location.
-	MeteringLocationID *string `json:"meteringLocation_id,omitempty"`
+	// This foreign key is required (EDMX Nullable="false"), so it is a non-pointer string.
+	MeteringLocationID string `json:"meteringLocation_id"`
 	// ModelMeteringTasksID is the universally unique identifier (UUID) of the model metering task.
 	ModelMeteringTasksID *string `json:"modelMeteringTasks_id,omitempty"`
 	// DirectionCode is the code for the direction of the actor.
