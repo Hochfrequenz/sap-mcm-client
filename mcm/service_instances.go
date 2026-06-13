@@ -225,7 +225,7 @@ func (s *InstanceService) NotifyDeviceRemoved(ctx context.Context, instanceID, m
 // NotifyMarketLocationRemoved notifies the API that a market location has been
 // removed from a measurement concept instance.
 func (s *InstanceService) NotifyMarketLocationRemoved(ctx context.Context, instanceID, maloID string) error {
-	path := fmt.Sprintf("MCMInstances(%s)/marketLocations(%s)/MCMService.notifyMarketLocationRemoved", instanceID, maloID)
+	path := fmt.Sprintf("MCMInstances(%s)/marketLocations(%s)/MCMService.notifySingleMarketLocationRemoved", instanceID, maloID)
 
 	req, err := s.client.newRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {
@@ -237,7 +237,7 @@ func (s *InstanceService) NotifyMarketLocationRemoved(ctx context.Context, insta
 // NotifyFinalDataEntryReady notifies the API that the final data entry is
 // ready for a change process on a measurement concept instance.
 func (s *InstanceService) NotifyFinalDataEntryReady(ctx context.Context, instanceID, changeProcessID string) error {
-	path := fmt.Sprintf("MCMInstances(%s)/changeProcesses(%s)/MCMService.notifyFinalDataEntryReady", instanceID, changeProcessID)
+	path := fmt.Sprintf("MCMInstances(%s)/changeProcesses(%s)/processData/MCMService.notifyFinalDataEntryReady", instanceID, changeProcessID)
 
 	req, err := s.client.newRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {
