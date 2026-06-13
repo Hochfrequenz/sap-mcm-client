@@ -146,9 +146,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": ["requestId"],
                 "properties": {
                   "requestId": {
                     "type": "string",
+                    "format": "uuid",
                     "description": "The universally unique identifier (UUID) of the migration request to purge, as returned by the migrate operation."
                   }
                 }
