@@ -13,16 +13,12 @@ type CodeNameDescription struct {
 }
 
 // MCClassType is the expanded classType navigation property of a
-// measurement concept class (OData type MCClassTypes). In addition to the
-// usual code/name/description triple it carries three capability flags that
-// indicate whether classes of this type may be modified.
+// measurement concept class (OData type MCClassTypes). It embeds the
+// code/name/description triple shared with other code-list expansions and
+// adds three capability flags that indicate whether classes of this type may
+// be modified.
 type MCClassType struct {
-	// Code is the code representing the class type (e.g., "CLASS" or "SAPTEMPLATE").
-	Code string `json:"code"`
-	// Name is the brief description of the type of a measurement concept class.
-	Name *string `json:"name,omitempty"`
-	// Descr is the long description of the type of a measurement concept class.
-	Descr *string `json:"descr,omitempty"`
+	CodeNameDescription
 	// ReadOnly indicates whether measurement concept classes of this type are read-only.
 	ReadOnly *bool `json:"readOnly,omitempty"`
 	// Deletable indicates whether measurement concept classes of this type can be deleted.
