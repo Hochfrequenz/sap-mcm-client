@@ -509,4 +509,4 @@ class TestLifecycleActions:
 
         captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
-        assert f"/changeProcesses({cp_id})/MCMService.notifyFinalDataEntryReady" in url_str
+        assert f"/changeProcesses({cp_id})/processData/MCMService.notifyFinalDataEntryReady" in url_str
