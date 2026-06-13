@@ -1,5 +1,19 @@
 # sap-mcm-client
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/sap-mcm-client)](https://pypi.org/project/sap-mcm-client/)
+![Supported Python versions](https://img.shields.io/pypi/pyversions/sap-mcm-client.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Hochfrequenz/sap-mcm-client.svg)](https://pkg.go.dev/github.com/Hochfrequenz/sap-mcm-client/mcm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Hochfrequenz/sap-mcm-client)](https://goreportcard.com/report/github.com/Hochfrequenz/sap-mcm-client)
+
+![Python Tests](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/python-test.yml/badge.svg)
+![Python Coverage](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/python-coverage.yml/badge.svg)
+![Python Lint](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/python-lint.yml/badge.svg)
+![Python Formatting](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/python-formatting.yml/badge.svg)
+![Go Tests](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/go-test.yml/badge.svg)
+![Go Coverage](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/go-coverage.yml/badge.svg)
+![Go Lint](https://github.com/Hochfrequenz/sap-mcm-client/actions/workflows/go-lint.yml/badge.svg)
+
 Typed Python and Go client for the SAP Cloud for Utilities Foundation Measurement Concept Management (MCM) OData V4 APIs.
 
 ## What this does
@@ -37,11 +51,15 @@ For a condensed tour of the entity hierarchy and OData conventions, see [`docs/S
 pip install sap-mcm-client
 ```
 
+PyPI project page: [pypi.org/project/sap-mcm-client](https://pypi.org/project/sap-mcm-client/)
+
 ### Go
 
 ```bash
-go get github.com/Hochfrequenz/sap-mcm-client
+go get github.com/Hochfrequenz/sap-mcm-client/mcm
 ```
+
+Module / API docs: [pkg.go.dev/github.com/Hochfrequenz/sap-mcm-client/mcm](https://pkg.go.dev/github.com/Hochfrequenz/sap-mcm-client/mcm)
 
 ## Quickstart
 
