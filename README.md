@@ -1,4 +1,4 @@
-# mkv-api-client
+# sap-mcm-client
 
 Typed Python and Go client for the SAP Cloud for Utilities Foundation Measurement Concept Management (MCM) OData V4 APIs.
 
@@ -40,7 +40,7 @@ pip install sap-mcm-client
 ### Go
 
 ```bash
-go get github.com/Hochfrequenz/mkv-api-client
+go get github.com/Hochfrequenz/sap-mcm-client
 ```
 
 ## Quickstart
@@ -89,7 +89,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/Hochfrequenz/mkv-api-client/mcm"
+    "github.com/Hochfrequenz/sap-mcm-client/mcm"
 )
 
 func main() {

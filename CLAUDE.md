@@ -6,7 +6,7 @@ Dual-language (Python + Go) typed client for the SAP Cloud for Utilities Foundat
 
 ## Repository Structure
 
-- Go code in `mcm/` (package `mcm`, import `github.com/Hochfrequenz/mkv-api-client/mcm`)
+- Go code in `mcm/` (package `mcm`, import `github.com/Hochfrequenz/sap-mcm-client/mcm`)
 - Python in `src/sap_mcm_client/`
 - SAP OpenAPI specs are NOT committed (SAP IP). See CONTRIBUTING.md for download steps. Our condensed analysis lives at `docs/SPECS_ANALYSIS.md`.
 - Shared test fixtures in `testdata/` (Go tests read via `../testdata/`)

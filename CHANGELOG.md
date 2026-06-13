@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial dual-language (Python + Go) client for the SAP Cloud for Utilities Foundation MCM OData V4 APIs.
 - Python package `sap-mcm-client` with Pydantic v2 typed models.
-- Go module `github.com/Hochfrequenz/mkv-api-client` with clean typed structs.
+- Go module `github.com/Hochfrequenz/sap-mcm-client` with clean typed structs.
 - Full coverage of the **Measurement Concept Instance** API: list, get, create, update, 7 lifecycle actions (`init_change`, `init_merge`, `init_shutdown`, `init_version_cancel`, `notify_device_removed`, `notify_market_location_removed`, `notify_final_data_entry_ready`), and 5 sub-entity updates.
 - Read-only coverage of the **Measurement Concept Class** and **Measurement Concept Model** APIs.
 - OAuth2 Client Credentials authentication with automatic token refresh (30 s buffer) and thread-safe caching.
