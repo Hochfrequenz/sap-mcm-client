@@ -237,7 +237,7 @@ func (s *InstanceService) NotifyMarketLocationRemoved(ctx context.Context, insta
 // NotifyFinalDataEntryReady notifies the API that the final data entry is
 // ready for a change process on a measurement concept instance.
 func (s *InstanceService) NotifyFinalDataEntryReady(ctx context.Context, instanceID, changeProcessID string) error {
-	path := fmt.Sprintf("MCMInstances(%s)/changeProcesses(%s)/MCMService.notifyFinalDataEntryReady", instanceID, changeProcessID)
+	path := fmt.Sprintf("MCMInstances(%s)/changeProcesses(%s)/processData/MCMService.notifyFinalDataEntryReady", instanceID, changeProcessID)
 
 	req, err := s.client.newRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {

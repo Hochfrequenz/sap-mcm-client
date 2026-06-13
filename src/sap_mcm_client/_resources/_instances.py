@@ -500,5 +500,5 @@ class InstanceResource:
         self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/changeProcesses({str(change_process_id)})"
-            "/MCMService.notifyFinalDataEntryReady",
+            "/processData/MCMService.notifyFinalDataEntryReady",
         )

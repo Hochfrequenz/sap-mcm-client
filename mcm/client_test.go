@@ -614,7 +614,7 @@ func TestInstancesNotifyMarketLocationRemoved(t *testing.T) {
 func TestInstancesNotifyFinalDataEntryReady(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method)
-		assert.Contains(t, r.URL.Path, "MCMService.notifyFinalDataEntryReady")
+		assert.Contains(t, r.URL.Path, "/processData/MCMService.notifyFinalDataEntryReady")
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer srv.Close()
