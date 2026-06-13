@@ -460,7 +460,8 @@ class InstanceResource:
         """
         self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})" "/MCMService.notifyDeviceRemoved",
+            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})"
+            "/MCMService.notifySingleDeviceRemoved",
         )
 
     def notify_market_location_removed(
