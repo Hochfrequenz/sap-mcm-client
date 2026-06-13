@@ -53,6 +53,7 @@ from sap_mcm_client.types_actions import (
 from sap_mcm_client.types_class import (
     ClassActor,
     ClassMeteringLocation,
+    ClassTypeInfo,
     MeasurementConceptClass,
 )
 
@@ -197,6 +198,7 @@ __all__ = [
     # Class types
     "ClassActor",
     "ClassMeteringLocation",
+    "ClassTypeInfo",
     "MeasurementConceptClass",
     # Model types
     "MeasurementConceptModel",

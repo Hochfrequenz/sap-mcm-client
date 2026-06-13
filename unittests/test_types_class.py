@@ -7,6 +7,7 @@ from uuid import UUID
 
 from sap_mcm_client import (
     ClassType,
+    ClassTypeInfo,
     Direction,
     Division,
     MeasurementConceptClass,
@@ -64,3 +65,24 @@ class TestClassParsing:
         assert cls.actors[1].type_code == "PRODUCER"
         assert cls.actors[1].direction_code == Direction.IN
         assert cls.actors[1].energy_source_code == "SOLAR"
+
+    def test_class_type_capability_flags(self) -> None:
+        """The expanded classType (MCClassTypes) exposes readOnly / deletable /
+        updateable capability flags (issue #28)."""
+        cls = MeasurementConceptClass.model_validate(
+            {
+                "id": "cccccccc-3333-4444-5555-666677778888",
+                "classType": {
+                    "code": "SAPTEMPLATE",
+                    "name": "Template",
+                    "descr": "SAP Template",
+                    "readOnly": True,
+                    "deletable": False,
+                    "updateable": False,
+                },
+            }
+        )
+        assert isinstance(cls.class_type, ClassTypeInfo)
+        assert cls.class_type.read_only is True
+        assert cls.class_type.deletable is False
+        assert cls.class_type.updateable is False

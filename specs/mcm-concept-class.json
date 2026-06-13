@@ -746,6 +746,21 @@
             "nullable": true,
             "description": "The long description of the type of a measurement concept class."
             },
+            "readOnly": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type are read-only."
+            },
+            "deletable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type can be deleted."
+            },
+            "updateable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates whether measurement concept classes of this type can be updated."
+            },
             "code": {
             "type": "string",
             "maxLength": 12,
