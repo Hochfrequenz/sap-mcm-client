@@ -107,6 +107,28 @@ class ClassActor(MCMBaseModel):
     )
 
 
+class ClassTypeInfo(CodeDescription):
+    """The expanded ``classType`` navigation property (OData type ``MCClassTypes``).
+
+    Extends the shared ``{code, name, descr}`` code-list entry with three
+    capability flags describing whether measurement concept classes of this
+    type may be modified.
+    """
+
+    read_only: bool | None = Field(
+        None,
+        description="Indicates whether measurement concept classes of this type are read-only.",
+    )
+    deletable: bool | None = Field(
+        None,
+        description="Indicates whether measurement concept classes of this type can be deleted.",
+    )
+    updateable: bool | None = Field(
+        None,
+        description="Indicates whether measurement concept classes of this type can be updated.",
+    )
+
+
 class MeasurementConceptClass(MCMBaseModel):
     """A measurement concept class response."""
 
@@ -141,7 +163,7 @@ class MeasurementConceptClass(MCMBaseModel):
         max_length=2,
         description="The code representing the division of the measurement concept class. The supported divisions are ``EL`` (electricity), ``GA`` (gas), ``WA`` (water), and ``RH`` (remote heat).",
     )
-    class_type: CodeDescription | None = Field(
+    class_type: ClassTypeInfo | None = Field(
         None,
         description="The expanded class type navigation property.",
     )

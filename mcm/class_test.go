@@ -139,3 +139,32 @@ func TestParseClassListCollection(t *testing.T) {
 	require.NotNil(t, resp.Items[1].ClassTypeCode)
 	assert.Equal(t, "SAPTEMPLATE", *resp.Items[1].ClassTypeCode)
 }
+
+// TestParseClassTypeCapabilityFlags verifies that the expanded classType
+// (MCClassTypes) carries the readOnly / deletable / updateable capability
+// flags exposed by the API (issue #28).
+func TestParseClassTypeCapabilityFlags(t *testing.T) {
+	raw := `{
+		"id": "cccccccc-3333-4444-5555-666677778888",
+		"classType": {
+			"code": "SAPTEMPLATE",
+			"name": "Template",
+			"descr": "SAP Template",
+			"readOnly": true,
+			"deletable": false,
+			"updateable": false
+		}
+	}`
+
+	var cls MeasurementConceptClass
+	require.NoError(t, json.Unmarshal([]byte(raw), &cls))
+
+	require.NotNil(t, cls.ClassType)
+	assert.Equal(t, "SAPTEMPLATE", cls.ClassType.Code)
+	require.NotNil(t, cls.ClassType.ReadOnly)
+	assert.True(t, *cls.ClassType.ReadOnly)
+	require.NotNil(t, cls.ClassType.Deletable)
+	assert.False(t, *cls.ClassType.Deletable)
+	require.NotNil(t, cls.ClassType.Updateable)
+	assert.False(t, *cls.ClassType.Updateable)
+}
