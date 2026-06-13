@@ -93,7 +93,10 @@ version = "{version}"
 '''
 
 [tool.hatch.build.targets.sdist]
-exclude = ["/unittests"]
+# Never ship the SAP OpenAPI specs (SAP IP, not redistributable). They are
+# git-ignored and not committed, but exclude them defensively so a locally
+# downloaded copy can never end up in a published source distribution.
+exclude = ["/unittests", "/specs"]
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src"]

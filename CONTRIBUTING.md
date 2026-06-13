@@ -31,15 +31,43 @@ golangci-lint run --enable dupl,goconst,gocyclo
 
 CI also checks these — but running locally is faster.
 
+## Downloading the OpenAPI specs
+
+The SAP MCM OpenAPI specs are SAP's intellectual property and are **not** redistributed in this repository. Download them yourself from the [SAP Business Accelerator Hub](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) (requires a free SAP account):
+
+1. Sign in at [api.sap.com](https://api.sap.com).
+2. Open each API in the **SAP Cloud for Utilities Foundation** package and use the **Download API Specification** button to grab the JSON.
+3. Optionally also fetch the EDMX metadata via the API's "Specification" view.
+4. Place the downloaded files under a local `specs/` directory (gitignored).
+
+Recommended layout:
+
+```
+specs/
+├── mcm-concept-class.json
+├── mcm-concept-model.json
+├── mcm-instance.json
+├── mcm-instance-migration-v1.1.0.json
+├── time-series.json
+└── metadata/
+    ├── mcm-concept-class.edmx
+    ├── mcm-concept-model.edmx
+    ├── mcm-instance.edmx
+    ├── mcm-instance-migration.edmx
+    └── time-series.edmx
+```
+
+Our condensed analysis of the API surface lives at [`docs/SPECS_ANALYSIS.md`](docs/SPECS_ANALYSIS.md) — start there before opening the raw specs.
+
 ## Updating from new spec versions
 
 When SAP releases a new version of the OpenAPI specs:
 
-1. Download the new specs from [api.sap.com](https://api.sap.com/package/SAPCloudForUtilitiesFoundation/overview) into `specs/`.
+1. Re-download the new specs into your local `specs/` directory (see above).
 2. Diff the old and new specs to find added/removed/changed fields.
-3. Update the corresponding Pydantic models in `src/sap_mcm_client/types_*.py` and Go structs in `*.go` at the repo root.
-4. Update or add enum values in `src/sap_mcm_client/enums.py` and `enums.go`.
-5. Update `specs/ANALYSIS.md` if the overall API shape changed.
+3. Update the corresponding Pydantic models in `src/sap_mcm_client/types_*.py` and Go structs in `mcm/*.go`.
+4. Update or add enum values in `src/sap_mcm_client/enums.py` and `mcm/enums.go`.
+5. Update `docs/SPECS_ANALYSIS.md` if the overall API shape changed.
 6. Add an entry to `CHANGELOG.md` under `[Unreleased]`.
 7. Bump the spec version reference in `README.md` limitations section.
 

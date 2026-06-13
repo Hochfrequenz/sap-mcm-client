@@ -27,7 +27,7 @@ Deeper background on the MCM domain itself (Messkonzeptklasse, Messkonzeptmodell
 - [SAP Utilities Core Foundation — Measurement Concept Management](https://help.sap.com/docs/r/product/Cloud_for_Utilities_Foundation/Cloud/en-US) (SAP Help Portal)
 - [MCM component overview on community.sap.com](https://community.sap.com/t5/sap-for-utilities-blog-posts/sap-utilities-core-foundation-measurement-concept-management-component/ba-p/13576654)
 
-The OpenAPI specs consumed by this client live under [`specs/`](specs/) — see [`specs/ANALYSIS.md`](specs/ANALYSIS.md) for a condensed tour of the entity hierarchy and OData conventions.
+For a condensed tour of the entity hierarchy and OData conventions, see [`docs/SPECS_ANALYSIS.md`](docs/SPECS_ANALYSIS.md). The SAP OpenAPI specs themselves are not redistributed in this repository (they're SAP IP); see [CONTRIBUTING.md](CONTRIBUTING.md#downloading-the-openapi-specs) for how to download them locally.
 
 ## Installation
 
