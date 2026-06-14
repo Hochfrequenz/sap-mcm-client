@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -21,6 +22,10 @@ const (
 	migrationBasePath       = "/odata/v4/api/migrate/v1"
 	timeSeriesODataBasePath = "/odata/v4/api/v1/TimeSeries"
 	timeSeriesRESTBasePath  = "/api/v1/timeseries"
+
+	// Event names for the structured "wide event" log records.
+	eventRequest    = "mcm.request"
+	eventTokenFetch = "mcm.token_fetch"
 )
 
 // Config holds the configuration for creating a new MCM API Client.
@@ -193,7 +198,7 @@ func (c *Client) logRequest(req *http.Request, requestID string, started time.Ti
 		return
 	}
 	attrs := []slog.Attr{
-		slog.String("event", "mcm.request"),
+		slog.String("event", eventRequest),
 		slog.String("request_id", requestID),
 		slog.String("http_method", req.Method),
 		slog.String("url", loggedURL(req.URL)),
@@ -201,7 +206,7 @@ func (c *Client) logRequest(req *http.Request, requestID string, started time.Ti
 	}
 	ctx := req.Context()
 	if reqErr != nil {
-		attrs = append(attrs, slog.Bool("ok", false), slog.String("error", reqErr.Error()))
+		attrs = append(attrs, slog.Bool("ok", false), slog.String("error", sanitizeError(reqErr)))
 		c.logger.LogAttrs(ctx, slog.LevelError, "mcm request failed", attrs...)
 		return
 	}
@@ -233,6 +238,19 @@ func newRequestID() string {
 		return ""
 	}
 	return hex.EncodeToString(b[:])
+}
+
+// sanitizeError renders an error for logging without leaking the request URL.
+// net/http transport failures are *url.Error values whose Error() embeds the
+// full URL, query string included; we log only the underlying cause so query
+// parameters never reach the log (the path is logged separately via the
+// "url" attribute, already query-stripped).
+func sanitizeError(err error) string {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) && urlErr.Err != nil {
+		return urlErr.Err.Error()
+	}
+	return err.Error()
 }
 
 // loggedURL renders a URL for logging with the query string and fragment

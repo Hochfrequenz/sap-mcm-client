@@ -136,7 +136,7 @@ func (ts *tokenSource) logTokenFetch(ctx context.Context, started time.Time, sta
 		return
 	}
 	attrs := []slog.Attr{
-		slog.String("event", "mcm.token_fetch"),
+		slog.String("event", eventTokenFetch),
 		slog.String("token_url", ts.cfg.TokenURL),
 		slog.Float64("duration_ms", elapsedMS(started)),
 		slog.Bool("ok", false),
@@ -155,7 +155,7 @@ func (ts *tokenSource) logTokenFetchOK(ctx context.Context, started time.Time, e
 		return
 	}
 	ts.logger.LogAttrs(ctx, slog.LevelInfo, "mcm token fetched",
-		slog.String("event", "mcm.token_fetch"),
+		slog.String("event", eventTokenFetch),
 		slog.String("token_url", ts.cfg.TokenURL),
 		slog.Float64("duration_ms", elapsedMS(started)),
 		slog.Bool("ok", true),

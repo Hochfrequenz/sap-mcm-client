@@ -77,12 +77,12 @@ func TestRequestWideEventSuccess(t *testing.T) {
 	capture := &captureHandler{}
 	c := loggingClient(srv, slog.New(capture))
 
-	req, err := c.newRequest(context.Background(), http.MethodGet, "/MCMInstances", nil)
+	req, err := c.newRequest(context.Background(), http.MethodGet, "/MCMInstances?$filter=secret-filter", nil)
 	require.NoError(t, err)
 	_, err = c.doRaw(req)
 	require.NoError(t, err)
 
-	events := capture.eventsNamed("mcm.request")
+	events := capture.eventsNamed(eventRequest)
 	require.Len(t, events, 1)
 	rec := events[0]
 	attrs := attrsOf(rec)
@@ -92,7 +92,9 @@ func TestRequestWideEventSuccess(t *testing.T) {
 	assert.Equal(t, int64(200), attrs["http_status"])
 	assert.Equal(t, true, attrs["ok"])
 	assert.Contains(t, attrs["url"], "/MCMInstances")
-	assert.NotContains(t, attrs["url"], "?") // query is never logged
+	// The query string is never logged (neither the "?" nor its values).
+	assert.NotContains(t, attrs["url"], "?")
+	assert.NotContains(t, attrs["url"], "secret-filter")
 	assert.IsType(t, float64(0), attrs["duration_ms"])
 	assert.Greater(t, attrs["response_bytes"], int64(0))
 
@@ -117,7 +119,7 @@ func TestRequestWideEventRequestIDsUnique(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	events := capture.eventsNamed("mcm.request")
+	events := capture.eventsNamed(eventRequest)
 	require.Len(t, events, 2)
 	assert.NotEqual(t, attrsOf(events[0])["request_id"], attrsOf(events[1])["request_id"])
 }
@@ -144,7 +146,7 @@ func TestRequestWideEventLevelsByStatus(t *testing.T) {
 		_, err = c.doRaw(req)
 		require.Error(t, err) // >= 400 returns an APIError
 
-		events := capture.eventsNamed("mcm.request")
+		events := capture.eventsNamed(eventRequest)
 		require.Len(t, events, 1)
 		assert.Equal(t, tc.level, events[0].Level)
 		assert.Equal(t, int64(tc.status), attrsOf(events[0])["http_status"])
@@ -162,16 +164,18 @@ func TestRequestWideEventTransportError(t *testing.T) {
 		logger:     slog.New(capture),
 	}
 
-	req, err := c.newRequest(context.Background(), http.MethodGet, "/MCMInstances", nil)
+	req, err := c.newRequest(context.Background(), http.MethodGet, "/MCMInstances?$filter=secret-filter", nil)
 	require.NoError(t, err)
 	_, err = c.doRaw(req)
 	require.Error(t, err)
 
-	events := capture.eventsNamed("mcm.request")
+	events := capture.eventsNamed(eventRequest)
 	require.Len(t, events, 1)
 	assert.Equal(t, slog.LevelError, events[0].Level)
 	assert.Equal(t, false, attrsOf(events[0])["ok"])
 	assert.NotEmpty(t, attrsOf(events[0])["error"])
+	// The query string (PII) must not leak through the sanitized error or url.
+	assert.NotContains(t, recordString(events[0]), "secret-filter")
 }
 
 func TestNilLoggerDoesNotPanic(t *testing.T) {
@@ -209,7 +213,7 @@ func TestTokenFetchWideEventSuccess(t *testing.T) {
 	_, err := ts.Token(context.Background())
 	require.NoError(t, err)
 
-	events := capture.eventsNamed("mcm.token_fetch")
+	events := capture.eventsNamed(eventTokenFetch)
 	require.Len(t, events, 1)
 	attrs := attrsOf(events[0])
 	assert.Equal(t, slog.LevelInfo, events[0].Level)
@@ -239,7 +243,7 @@ func TestTokenFetchWideEventFailureSanitized(t *testing.T) {
 	_, err := ts.Token(context.Background())
 	require.Error(t, err)
 
-	events := capture.eventsNamed("mcm.token_fetch")
+	events := capture.eventsNamed(eventTokenFetch)
 	require.Len(t, events, 1)
 	assert.Equal(t, slog.LevelError, events[0].Level)
 	assert.Equal(t, false, attrsOf(events[0])["ok"])
