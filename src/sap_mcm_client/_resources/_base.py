@@ -87,7 +87,16 @@ class _AsyncHTTPClient:
         timeout: float,
     ) -> None:
         self._auth = auth
-        self._headers = dict(headers)
+        # ``Content-Type`` is applied per-request rather than as a session
+        # default: aiohttp sets the correct content type automatically for
+        # each body kind (``application/json`` for ``json=``, multipart with a
+        # boundary for ``FormData``). A session-wide ``Content-Type`` would
+        # clobber the multipart type on uploads. We still want the OData JSON
+        # content type (with ``IEEE754Compatible=true``) on JSON bodies, so we
+        # keep it aside and attach it only when a JSON body is sent.
+        request_headers = dict(headers)
+        self._json_content_type = request_headers.pop("Content-Type", None)
+        self._headers = request_headers
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._session: aiohttp.ClientSession | None = None
 
@@ -110,6 +119,11 @@ class _AsyncHTTPClient:
         """Perform an authenticated request and return a buffered response."""
         session = await self._get_session()
         headers = {"Authorization": await self._auth.async_auth_header()}
+        # Only attach the OData JSON content type when sending a JSON body;
+        # uploads pass ``data`` (FormData) and must keep aiohttp's multipart
+        # content type with its boundary.
+        if json is not None and self._json_content_type is not None:
+            headers["Content-Type"] = self._json_content_type
         async with session.request(
             method,
             url,

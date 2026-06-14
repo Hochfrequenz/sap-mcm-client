@@ -319,6 +319,32 @@ class TestInstanceResource:
             with pytest.raises(MCMNotFoundError):
                 await resource.get("01234567-89ab-cdef-0123-456789abcdef")
 
+    async def test_json_write_sends_odata_content_type(self) -> None:
+        """JSON bodies carry the OData content type (with IEEE754Compatible)."""
+        response_data = _load_json("instance_get.json")
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=response_data, status=201, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
+
+            await resource._request("POST", "/MCMInstances", json={"description": "x"})
+            captured = captured_requests(mocked)
+
+        content_type = captured[0].headers.get("Content-Type", "")
+        assert "application/json" in content_type
+        assert "IEEE754Compatible=true" in content_type
+
+    async def test_get_sends_no_content_type(self) -> None:
+        """Bodiless GET requests do not carry a Content-Type header."""
+        data = _load_json("instance_list.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
+
+            await resource.list()
+            captured = captured_requests(mocked)
+
+        assert "Content-Type" not in captured[0].headers
+
 
 # ---------------------------------------------------------------------------
 # Lifecycle actions

@@ -13,6 +13,7 @@ import pytest
 from aioresponses import aioresponses
 
 from sap_mcm_client._auth import OAuth2ClientCredentials
+from sap_mcm_client._odata import ODATA_HEADERS
 from sap_mcm_client._resources._base import _AsyncHTTPClient, _Response
 
 TESTDATA = Path(__file__).resolve().parent.parent / "testdata"
@@ -80,9 +81,18 @@ def _seeded_auth() -> OAuth2ClientCredentials:
     return auth
 
 
-def _make_http_client() -> _AsyncHTTPClient:
-    """Create an authenticated async HTTP client with a pre-seeded token."""
-    return _AsyncHTTPClient(auth=_seeded_auth(), headers={}, timeout=30.0)
+def _make_http_client(headers: dict[str, str] | None = None) -> _AsyncHTTPClient:
+    """Create an authenticated async HTTP client with a pre-seeded token.
+
+    Uses the real :data:`ODATA_HEADERS` by default so tests exercise the
+    same default-header handling as production (e.g. the OData JSON
+    content type is attached only to JSON bodies).
+    """
+    return _AsyncHTTPClient(
+        auth=_seeded_auth(),
+        headers=ODATA_HEADERS if headers is None else headers,
+        timeout=30.0,
+    )
 
 
 def captured_requests(mocked: aioresponses) -> list[CapturedRequest]:

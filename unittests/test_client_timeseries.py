@@ -199,6 +199,10 @@ class TestTimeSeriesUpload:
         assert "uploadID" not in url
         # The POST body is multipart form data
         assert isinstance(captured[0].data, aiohttp.FormData)
+        # No Content-Type override is sent, so aiohttp sets the multipart
+        # content type (with boundary) itself — the OData JSON content type
+        # must not leak onto the upload.
+        assert "Content-Type" not in captured[0].headers
 
     async def test_upload_with_upload_id_hits_upload_with_query(self) -> None:
         async with mock_client() as (mocked, client):
