@@ -236,7 +236,7 @@ attached via the record's `extra`:
 | `event` | `"mcm.request"` | event name (`mcm.token_fetch` for OAuth2 token fetches) |
 | `request_id` | `"9f8c…"` | unique per request (high cardinality) |
 | `http_method` | `"GET"` | |
-| `url` | `".../MCMInstances?$top=10"` | |
+| `url` | `".../MCMInstances"` | request path; query parameters are not logged |
 | `http_status` | `200` | |
 | `duration_ms` | `42.7` | wall-clock duration |
 | `response_bytes` | `1834` | |
