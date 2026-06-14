@@ -18,9 +18,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import time
 
 import aiohttp
+
+#: Logger for the OAuth2 token-fetch "wide event". Credentials (client
+#: secret, access token) are never logged. Child of the ``sap_mcm_client``
+#: package logger.
+logger = logging.getLogger(__name__)
 
 
 class MCMAuthError(Exception):
@@ -101,6 +107,7 @@ class OAuth2ClientCredentials:
         MCMAuthError
             If the HTTP request fails or the response is malformed.
         """
+        started = time.monotonic()
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -111,6 +118,7 @@ class OAuth2ClientCredentials:
                     response.raise_for_status()
                     body = await response.text()
         except aiohttp.ClientError as exc:
+            self._log_token_fetch(started, ok=False, error=exc)
             raise MCMAuthError(f"Failed to obtain OAuth2 token from {self._token_url}: {exc}") from exc
 
         # Parse the body separately so a non-JSON or incomplete payload is
@@ -121,7 +129,34 @@ class OAuth2ClientCredentials:
             access_token: str = payload["access_token"]
             expires_in: int = int(payload["expires_in"])
         except (KeyError, TypeError, ValueError) as exc:
+            self._log_token_fetch(started, ok=False, error=exc)
             raise MCMAuthError(f"Malformed token response from {self._token_url}: {exc}") from exc
 
         self._token = access_token
         self._expires_at = time.monotonic() + expires_in - self._REFRESH_MARGIN
+        self._log_token_fetch(started, ok=True, expires_in=expires_in)
+
+    def _log_token_fetch(
+        self,
+        started: float,
+        *,
+        ok: bool,
+        expires_in: int | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        """Emit one structured token-fetch event (never logging credentials)."""
+        duration_ms = round((time.monotonic() - started) * 1000, 3)
+        extra: dict[str, object] = {
+            "event": "mcm.token_fetch",
+            "token_url": self._token_url,
+            "duration_ms": duration_ms,
+            "ok": ok,
+        }
+        if ok:
+            extra["expires_in"] = expires_in
+            logger.info("mcm token fetched (expires_in=%ss)", expires_in, extra=extra)
+        else:
+            assert error is not None  # noqa: S101 — always provided on the failure path
+            extra["error_type"] = type(error).__name__
+            extra["error"] = str(error)
+            logger.error("mcm token fetch failed: %s", type(error).__name__, extra=extra)

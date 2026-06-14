@@ -1,5 +1,7 @@
 """Typed Python client for the SAP Cloud for Utilities Foundation MCM APIs."""
 
+import logging as _logging
+
 # Client
 # Auth errors
 from sap_mcm_client._auth import MCMAuthError
@@ -256,3 +258,10 @@ __all__ = [
     "TimeSeriesDataPoint",
     "DeleteTimeSeriesRequest",
 ]
+
+# A library must not configure logging for the application. Attach a
+# NullHandler to the package logger so records are silently dropped unless
+# the application adds its own handler on the ``sap_mcm_client`` logger (or
+# a parent). The client emits one structured "wide event" per outbound
+# request; see the Logging section of the README.
+_logging.getLogger(__name__).addHandler(_logging.NullHandler())

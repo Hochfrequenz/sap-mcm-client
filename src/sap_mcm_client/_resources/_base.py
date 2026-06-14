@@ -17,7 +17,10 @@ individual resource modules under :mod:`sap_mcm_client._resources`:
 from __future__ import annotations
 
 import json as _json_module
+import logging
+import time
 from typing import Any
+from uuid import uuid4
 
 import aiohttp
 
@@ -29,6 +32,11 @@ from sap_mcm_client._errors import (
     MCMNotFoundError,
     MCMValidationError,
 )
+
+#: Logger for the one structured "wide event" emitted per outbound request.
+#: A child of the ``sap_mcm_client`` package logger, so configuring that
+#: logger (or a parent) controls this output. See the README Logging section.
+logger = logging.getLogger(__name__)
 
 _BASE_PATH = "/odata/v4/api/mcm/v1"
 _MIGRATION_BASE_PATH = "/odata/v4/api/migrate/v1"
@@ -116,7 +124,14 @@ class _AsyncHTTPClient:
         params: dict[str, str] | None = None,
         data: aiohttp.FormData | None = None,
     ) -> _Response:
-        """Perform an authenticated request and return a buffered response."""
+        """Perform an authenticated request and return a buffered response.
+
+        Emits exactly one structured log record ("wide event") per request on
+        the ``sap_mcm_client`` logger: a single canonical line carrying the
+        method, URL, status, duration, and a high-cardinality ``request_id``,
+        rather than several fragmented messages. Credentials (the bearer
+        token, request headers) are never logged.
+        """
         session = await self._get_session()
         headers = {"Authorization": await self._auth.async_auth_header()}
         # Only attach the OData JSON content type when sending a JSON body;
@@ -124,16 +139,62 @@ class _AsyncHTTPClient:
         # content type with its boundary.
         if json is not None and self._json_content_type is not None:
             headers["Content-Type"] = self._json_content_type
-        async with session.request(
-            method,
-            url,
-            json=json,
-            params=params,
-            data=data,
-            headers=headers,
-        ) as response:
-            text = await response.text()
-            return _Response(response.status, text)
+
+        request_id = uuid4().hex
+        started = time.monotonic()
+        try:
+            async with session.request(
+                method,
+                url,
+                json=json,
+                params=params,
+                data=data,
+                headers=headers,
+            ) as response:
+                text = await response.text()
+        except Exception as exc:
+            # Transport-level failure (no HTTP response). Always recorded.
+            self._log_event(method, url, request_id, started, error=exc)
+            raise
+
+        self._log_event(method, url, request_id, started, status=response.status, text=text)
+        return _Response(response.status, text)
+
+    @staticmethod
+    def _log_event(
+        method: str,
+        url: str,
+        request_id: str,
+        started: float,
+        *,
+        status: int | None = None,
+        text: str | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        """Emit the single structured "wide event" for one request.
+
+        ``status``/``text`` describe a completed response; ``error`` marks a
+        transport-level failure. The level reflects the outcome so errors
+        always surface even when the happy path is quiet: 2xx -> INFO,
+        4xx -> WARNING, 5xx and transport errors -> ERROR.
+        """
+        duration_ms = round((time.monotonic() - started) * 1000, 3)
+        extra: dict[str, Any] = {
+            "event": "mcm.request",
+            "request_id": request_id,
+            "http_method": method,
+            "url": url,
+            "duration_ms": duration_ms,
+        }
+        if error is not None:
+            extra.update(ok=False, error_type=type(error).__name__, error=str(error))
+            logger.error("mcm request failed: %s %s (%s)", method, url, type(error).__name__, extra=extra)
+            return
+
+        assert status is not None  # noqa: S101 — provided on the success path
+        extra.update(http_status=status, response_bytes=len(text or ""), ok=200 <= status < 300)
+        level = logging.ERROR if status >= 500 else logging.WARNING if status >= 400 else logging.INFO
+        logger.log(level, "mcm request: %s %s -> %d in %.1fms", method, url, status, duration_ms, extra=extra)
 
     async def close(self) -> None:
         """Close the underlying session, if one was opened."""

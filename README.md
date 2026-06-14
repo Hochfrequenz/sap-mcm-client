@@ -218,6 +218,56 @@ if err != nil {
 }
 ```
 
+## Logging
+
+The Python client emits **one structured "wide event" per outbound request** —
+a single canonical log line carrying high-cardinality context as key-value
+fields, rather than several fragmented messages. This follows the
+[wide-event / canonical-log-line](https://loggingsucks.com) approach and uses
+only the standard library `logging` module.
+
+The library never configures logging itself (a `NullHandler` is attached to the
+`sap_mcm_client` logger); your application owns handlers, formatters, and levels.
+Each API request logs once on the `sap_mcm_client` logger with these fields
+attached via the record's `extra`:
+
+| Field | Example | Notes |
+|---|---|---|
+| `event` | `"mcm.request"` | event name (`mcm.token_fetch` for OAuth2 token fetches) |
+| `request_id` | `"9f8c…"` | unique per request (high cardinality) |
+| `http_method` | `"GET"` | |
+| `url` | `".../MCMInstances"` | request path; query parameters are not logged |
+| `http_status` | `200` | |
+| `duration_ms` | `42.7` | wall-clock duration |
+| `response_bytes` | `1834` | |
+| `ok` | `true` | `2xx` |
+| `error_type`, `error` | `"ClientConnectionError"` | only on failures |
+
+The **level reflects the outcome** so errors always surface even when the happy
+path is quiet: `2xx` → `INFO`, `4xx` → `WARNING`, `5xx` and transport failures →
+`ERROR`. **Credentials are never logged** (no bearer token, client secret, or
+request headers).
+
+To get JSON wide events, point the `sap_mcm_client` logger at a structured
+handler — for example with [`python-json-logger`](https://github.com/nhairs/python-json-logger):
+
+```python
+import logging
+from pythonjsonlogger.json import JsonFormatter
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
+
+log = logging.getLogger("sap_mcm_client")
+log.addHandler(handler)
+log.setLevel(logging.INFO)
+```
+
+Each request then emits a single JSON object with all of the fields above. Cost
+control (tail sampling — keep all errors/slow requests, sample the happy path)
+is best applied in your logging pipeline or collector, since the decision is
+made on the event's outcome.
+
 ## Development
 
 ### Python
