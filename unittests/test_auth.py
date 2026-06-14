@@ -96,6 +96,16 @@ class TestOAuth2ClientCredentials:
             with pytest.raises(MCMAuthError, match="Malformed token response"):
                 await auth.async_auth_header()
 
+    async def test_auth_error_on_non_json_response(self) -> None:
+        """MCMAuthError is raised when the token endpoint returns a non-JSON body."""
+        auth = OAuth2ClientCredentials(TOKEN_URL, CLIENT_ID, CLIENT_SECRET)
+
+        with aioresponses() as mocked:
+            mocked.post(TOKEN_URL, body="<html>not json</html>", content_type="text/html")
+
+            with pytest.raises(MCMAuthError, match="Malformed token response"):
+                await auth.async_auth_header()
+
     async def test_auth_error_on_connection_failure(self) -> None:
         """MCMAuthError is raised when the token endpoint is unreachable."""
         auth = OAuth2ClientCredentials(TOKEN_URL, CLIENT_ID, CLIENT_SECRET)

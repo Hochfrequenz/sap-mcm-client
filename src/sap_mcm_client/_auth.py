@@ -17,6 +17,7 @@ multiple coroutines sharing a single :class:`aiohttp.ClientSession`.
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 
 import aiohttp
@@ -108,14 +109,15 @@ class OAuth2ClientCredentials:
                     auth=aiohttp.BasicAuth(self._client_id, self._client_secret),
                 ) as response:
                     response.raise_for_status()
-                    # ``content_type=None`` disables aiohttp's strict
-                    # content-type check so the body is parsed as JSON
-                    # regardless of the response's declared content type.
-                    payload = await response.json(content_type=None)
+                    body = await response.text()
         except aiohttp.ClientError as exc:
             raise MCMAuthError(f"Failed to obtain OAuth2 token from {self._token_url}: {exc}") from exc
 
+        # Parse the body separately so a non-JSON or incomplete payload is
+        # reported as a malformed response rather than a transport failure.
+        # ``json.loads`` raises ``JSONDecodeError`` (a ``ValueError``).
         try:
+            payload = json.loads(body)
             access_token: str = payload["access_token"]
             expires_in: int = int(payload["expires_in"])
         except (KeyError, TypeError, ValueError) as exc:

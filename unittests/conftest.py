@@ -92,6 +92,11 @@ def captured_requests(mocked: aioresponses) -> list[CapturedRequest]:
     ``params`` values the client passed, so assertions can match the
     human-readable query string (e.g. ``$top=10`` or ``externalID='a''b'``)
     without fighting percent-encoding.
+
+    Note: because the query is reconstructed from the ``params`` mapping the
+    client supplied, these assertions verify *what the client intended to
+    send*, not the exact percent-encoding aiohttp puts on the wire (aiohttp's
+    own URL handling is responsible for, and tested for, correct encoding).
     """
     out: list[CapturedRequest] = []
     for (method, url), calls in mocked.requests.items():
