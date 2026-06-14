@@ -3,6 +3,7 @@ package mcm
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -51,7 +52,7 @@ func TestTokenSourceFetchToken(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	tok, err := ts.Token(context.Background())
 	require.NoError(t, err)
@@ -67,7 +68,7 @@ func TestTokenSourceCaching(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	// First call fetches the token.
 	tok1, err := ts.Token(context.Background())
@@ -104,7 +105,7 @@ func TestTokenSourceRefreshOnExpiry(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	// First call.
 	tok1, err := ts.Token(context.Background())
@@ -142,7 +143,7 @@ func TestTokenSourceRefreshWhenNearExpiry(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	// First call.
 	_, err := ts.Token(context.Background())
@@ -171,7 +172,7 @@ func TestTokenSourceErrorOnFetchFailure(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	_, err := ts.Token(context.Background())
 	require.Error(t, err)
@@ -194,7 +195,7 @@ func TestTokenSourceErrorOnEmptyAccessToken(t *testing.T) {
 		TokenURL:     srv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	_, err := ts.Token(context.Background())
 	require.Error(t, err)
@@ -206,7 +207,7 @@ func TestTokenSourceErrorOnInvalidURL(t *testing.T) {
 		TokenURL:     "http://127.0.0.1:1/invalid",
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	_, err := ts.Token(context.Background())
 	require.Error(t, err)
@@ -227,7 +228,7 @@ func TestAuthTransportAddsBearer(t *testing.T) {
 		TokenURL:     tokenSrv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	})
+	}, slog.New(slog.DiscardHandler))
 
 	transport := &authTransport{
 		source: ts,
@@ -250,7 +251,7 @@ func TestNewAuthenticatedClient(t *testing.T) {
 		TokenURL:     tokenSrv.URL,
 		ClientID:     "test-client-id",
 		ClientSecret: "test-client-secret",
-	}, 10*time.Second)
+	}, 10*time.Second, slog.New(slog.DiscardHandler))
 
 	require.NotNil(t, client)
 	assert.Equal(t, 10*time.Second, client.Timeout)

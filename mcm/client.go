@@ -3,10 +3,15 @@ package mcm
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
+	"math"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -26,6 +31,10 @@ type Config struct {
 	Auth AuthConfig
 	// Timeout is the HTTP client timeout. Defaults to 30 seconds when zero.
 	Timeout time.Duration
+	// Logger receives one structured "wide event" per outbound request (and
+	// per OAuth2 token fetch). When nil, logging is disabled. Credentials are
+	// never logged.
+	Logger *slog.Logger
 }
 
 // Client provides access to the SAP MCM APIs.
@@ -47,6 +56,7 @@ type Client struct {
 	baseURL    string // MCM-prefixed base URL (host + /odata/v4/api/mcm/v1).
 	rawBaseURL string // Host-only base URL, used by services with non-MCM prefixes.
 	httpClient *http.Client
+	logger     *slog.Logger
 }
 
 // NewClient creates a new MCM API client with the given configuration.
@@ -58,11 +68,19 @@ func NewClient(cfg Config) *Client {
 		timeout = 30 * time.Second
 	}
 
+	logger := cfg.Logger
+	if logger == nil {
+		// A library must not log unless the application asks it to; discard
+		// everything by default (the analogue of a NullHandler).
+		logger = slog.New(slog.DiscardHandler)
+	}
+
 	raw := strings.TrimRight(cfg.BaseURL, "/")
 	c := &Client{
 		baseURL:    raw + basePath,
 		rawBaseURL: raw,
-		httpClient: newAuthenticatedClient(cfg.Auth, timeout),
+		httpClient: newAuthenticatedClient(cfg.Auth, timeout, logger),
+		logger:     logger,
 	}
 
 	c.Instances = &InstanceService{client: c}
@@ -109,17 +127,30 @@ func (c *Client) newAbsoluteRequest(ctx context.Context, method, url string, bod
 
 // doRaw executes the HTTP request and returns the raw response body.
 // For status codes >= 400 an [APIError] is returned.
+//
+// Exactly one structured "wide event" is logged per call (see [Config.Logger]):
+// a single canonical record carrying the method, path, status, duration and a
+// high-cardinality request_id, rather than several fragmented lines. The level
+// reflects the outcome (2xx info, 4xx warn, 5xx and transport errors error),
+// and credentials are never logged.
 func (c *Client) doRaw(req *http.Request) ([]byte, error) {
+	requestID := newRequestID()
+	started := time.Now()
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		c.logRequest(req, requestID, started, 0, 0, err)
 		return nil, fmt.Errorf("executing request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		c.logRequest(req, requestID, started, resp.StatusCode, 0, err)
 		return nil, fmt.Errorf("reading response body: %w", err)
 	}
+
+	c.logRequest(req, requestID, started, resp.StatusCode, len(body), nil)
 
 	if resp.StatusCode >= 400 {
 		apiErr := &APIError{
@@ -152,4 +183,73 @@ func (c *Client) do(req *http.Request, v any) error {
 	}
 
 	return nil
+}
+
+// logRequest emits the single structured "wide event" for one request.
+// A non-nil reqErr marks a transport-level failure (no HTTP response);
+// otherwise status and respBytes describe the completed response.
+func (c *Client) logRequest(req *http.Request, requestID string, started time.Time, status, respBytes int, reqErr error) {
+	if c.logger == nil {
+		return
+	}
+	attrs := []slog.Attr{
+		slog.String("event", "mcm.request"),
+		slog.String("request_id", requestID),
+		slog.String("http_method", req.Method),
+		slog.String("url", loggedURL(req.URL)),
+		slog.Float64("duration_ms", elapsedMS(started)),
+	}
+	ctx := req.Context()
+	if reqErr != nil {
+		attrs = append(attrs, slog.Bool("ok", false), slog.String("error", reqErr.Error()))
+		c.logger.LogAttrs(ctx, slog.LevelError, "mcm request failed", attrs...)
+		return
+	}
+
+	// Level reflects the outcome so errors always surface even when the happy
+	// path is quiet: 2xx -> info, 4xx -> warn, 5xx -> error.
+	level := slog.LevelInfo
+	switch {
+	case status >= 500:
+		level = slog.LevelError
+	case status >= 400:
+		level = slog.LevelWarn
+	}
+	attrs = append(attrs,
+		slog.Int("http_status", status),
+		slog.Int("response_bytes", respBytes),
+		slog.Bool("ok", status >= 200 && status < 300),
+	)
+	c.logger.LogAttrs(ctx, level, "mcm request", attrs...)
+}
+
+// newRequestID returns a 32-character hex request identifier (high
+// cardinality, unique per request).
+func newRequestID() string {
+	var b [16]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		// crypto/rand failure is effectively impossible; an empty id is an
+		// acceptable degradation and never blocks the request.
+		return ""
+	}
+	return hex.EncodeToString(b[:])
+}
+
+// loggedURL renders a URL for logging with the query string and fragment
+// stripped — query parameters are deliberately not logged.
+func loggedURL(u *url.URL) string {
+	if u == nil {
+		return ""
+	}
+	cleaned := *u
+	cleaned.RawQuery = ""
+	cleaned.Fragment = ""
+	return cleaned.String()
+}
+
+// elapsedMS returns the milliseconds elapsed since started, rounded to 3
+// decimal places.
+func elapsedMS(started time.Time) float64 {
+	ms := float64(time.Since(started).Nanoseconds()) / 1e6
+	return math.Round(ms*1000) / 1000
 }
