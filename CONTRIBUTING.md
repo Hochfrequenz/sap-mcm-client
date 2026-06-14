@@ -78,7 +78,7 @@ Both languages MUST stay in sync. A single PR updating both is preferred.
 When you have access to a real SAP system:
 
 1. Copy `.env.example` to `.env` and fill in your SAP BTP service binding values.
-2. Install the two script dependencies: `pip install httpx python-dotenv`.
+2. Install the two script dependencies: `pip install aiohttp python-dotenv`.
 3. Run `python scripts/record_responses.py`.
 4. Commit the new JSON files under `testdata/recorded/`.
 5. Diff against the existing spec-derived fixtures in `testdata/` to spot discrepancies between the spec and the real API.

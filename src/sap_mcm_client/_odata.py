@@ -186,7 +186,7 @@ def build_query_params(
     Returns
     -------
     dict[str, str]
-        Query parameters ready to pass to ``httpx`` as ``params=``.
+        Query parameters ready to pass to the HTTP client as ``params=``.
     """
     params: dict[str, str] = {}
 

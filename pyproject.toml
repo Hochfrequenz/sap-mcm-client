@@ -19,13 +19,19 @@ classifiers = [
 ]
 dependencies = [
     "pydantic>=2",
-    "httpx>=0.27",
+    # Upper bound is a test-tooling constraint, not a library one: the
+    # aioresponses mock (used in the unit tests) does not yet support
+    # aiohttp 3.14's ClientResponse signature. Lift once aioresponses
+    # releases aiohttp 3.14 compatibility.
+    "aiohttp>=3.9,<3.14",
 ]
 dynamic = ["readme", "version"]
 
 [project.optional-dependencies]
 tests = [
     "pytest==9.0.3",
+    "pytest-asyncio==1.3.0",
+    "aioresponses==0.7.8",
 ]
 linting = [
     "pylint==4.0.5",
@@ -71,9 +77,19 @@ disable = [
     "line-too-long",
 ]
 
+[tool.pytest.ini_options]
+# pytest-asyncio in "auto" mode treats every ``async def test_*`` as an
+# asyncio test, so individual tests need no ``@pytest.mark.asyncio`` marker.
+asyncio_mode = "auto"
+
 [tool.mypy]
 disable_error_code = []
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# aioresponses ships no type stubs and is not PEP 561 typed.
+module = ["aioresponses.*"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["hatchling>=1.8.0", "hatch-vcs", "hatch-fancy-pypi-readme"]

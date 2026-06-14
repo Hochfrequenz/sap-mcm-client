@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
-from urllib.parse import unquote, unquote_plus, urlsplit
+from typing import Any, AsyncIterator, cast
 
-import httpx
 import pytest
+from aioresponses import aioresponses
+
+from sap_mcm_client._auth import OAuth2ClientCredentials
+from sap_mcm_client._resources._base import _AsyncHTTPClient, _Response
 
 TESTDATA = Path(__file__).resolve().parent.parent / "testdata"
 
@@ -30,73 +35,95 @@ def _load_json(name: str) -> dict[str, Any]:
     return cast(dict[str, Any], json.loads((TESTDATA / name).read_text(encoding="utf-8")))
 
 
-def _decoded_url(request: httpx.Request) -> str:
-    """Return a fully percent-decoded form of the request URL.
+@dataclass
+class CapturedRequest:
+    """A single request observed by :func:`captured_requests`.
 
-    Only the query string is ``unquote_plus``-decoded (``+`` -> space), so
-    that literal ``+`` characters in the path (e.g. in an ``externalId``
-    segment) survive unchanged for assertions.
+    Mirrors the small surface the tests relied on with the old httpx mock
+    transport: the HTTP ``method``, the fully-rendered ``url`` (query string
+    included), and the request body (``json`` / ``data``).
     """
-    parts = urlsplit(str(request.url))
-    path = unquote(parts.path)
-    query = unquote_plus(parts.query)
-    if query:
-        return f"{parts.scheme}://{parts.netloc}{path}?{query}"
-    return f"{parts.scheme}://{parts.netloc}{path}"
+
+    method: str
+    url: str
+    json: Any = None
+    data: Any = None
+    headers: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def content(self) -> bytes:
+        """The JSON body re-encoded as bytes (for ``json.loads`` assertions)."""
+        return json.dumps(self.json).encode("utf-8")
 
 
-def _json_response(
-    data: dict[str, Any] | list[Any],
-    status_code: int = 200,
-) -> httpx.Response:
-    """Create an httpx.Response with JSON body."""
-    return httpx.Response(
-        status_code=status_code,
-        json=data,
-        request=httpx.Request("GET", "https://example.com"),
-    )
+def _decoded_url(request: CapturedRequest) -> str:
+    """Return the request's URL.
 
-
-def _make_mock_transport(
-    responses: dict[str, httpx.Response] | None = None,
-    default_response: httpx.Response | None = None,
-) -> httpx.MockTransport:
-    """Create a MockTransport that routes by URL path.
-
-    Parameters
-    ----------
-    responses:
-        Mapping of URL path substrings to responses.
-    default_response:
-        Fallback response for unmatched URLs.
+    :func:`captured_requests` already stores a fully-decoded URL (path plus
+    the literal query parameter values), so this is a thin accessor kept for
+    readability at the call sites.
     """
-    captured_requests: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        captured_requests.append(request)
-        url_str = str(request.url)
-        if responses:
-            for path_substr, resp in responses.items():
-                if path_substr in url_str:
-                    return resp
-        if default_response is not None:
-            return default_response
-        return httpx.Response(status_code=404, request=request)
-
-    transport = httpx.MockTransport(handler)
-    transport._captured_requests = captured_requests  # type: ignore[attr-defined]
-    return transport
+    return request.url
 
 
-def _make_http_client(transport: httpx.MockTransport) -> httpx.Client:
-    """Create an httpx.Client with the given mock transport and no auth."""
-    return httpx.Client(transport=transport)
+def _make_response(status_code: int, *, json_body: Any | None = None, text: str = "") -> _Response:
+    """Build a buffered :class:`_Response` for direct ``_raise_for_status`` tests."""
+    body = json.dumps(json_body) if json_body is not None else text
+    return _Response(status_code, body)
 
 
-def _make_client_with_transport(transport: httpx.MockTransport) -> tuple[httpx.Client, str]:
-    """Create an httpx.Client with the given transport and return (client, base_url)."""
-    client = httpx.Client(transport=transport)
-    return client, BASE_URL
+def _seeded_auth() -> OAuth2ClientCredentials:
+    """An auth object with a pre-seeded token so no token request is made."""
+    auth = OAuth2ClientCredentials(TOKEN_URL, "client-id", "client-secret")
+    auth._token = "test-token"  # noqa: SLF001  # pylint: disable=protected-access
+    auth._expires_at = time.monotonic() + 3600  # noqa: SLF001  # pylint: disable=protected-access
+    return auth
+
+
+def _make_http_client() -> _AsyncHTTPClient:
+    """Create an authenticated async HTTP client with a pre-seeded token."""
+    return _AsyncHTTPClient(auth=_seeded_auth(), headers={}, timeout=30.0)
+
+
+def captured_requests(mocked: aioresponses) -> list[CapturedRequest]:
+    """Collect every request aioresponses observed, in insertion order.
+
+    The URL is rebuilt from the (decoded) request path and the literal
+    ``params`` values the client passed, so assertions can match the
+    human-readable query string (e.g. ``$top=10`` or ``externalID='a''b'``)
+    without fighting percent-encoding.
+    """
+    out: list[CapturedRequest] = []
+    for (method, url), calls in mocked.requests.items():
+        for call in calls:
+            base = f"{url.scheme}://{url.host}{url.path}"
+            params = call.kwargs.get("params")
+            if params:
+                query = "&".join(f"{key}={value}" for key, value in params.items())
+                full = f"{base}?{query}"
+            else:
+                full = base
+            out.append(
+                CapturedRequest(
+                    method=method,
+                    url=full,
+                    json=call.kwargs.get("json"),
+                    data=call.kwargs.get("data"),
+                    headers=dict(call.kwargs.get("headers") or {}),
+                )
+            )
+    return out
+
+
+@contextlib.asynccontextmanager
+async def mock_client() -> AsyncIterator[tuple[aioresponses, _AsyncHTTPClient]]:
+    """Yield an ``(aioresponses, client)`` pair and close the client on exit."""
+    with aioresponses() as mocked:
+        client = _make_http_client()
+        try:
+            yield mocked, client
+        finally:
+            await client.close()
 
 
 # ---------------------------------------------------------------------------

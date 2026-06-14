@@ -8,7 +8,7 @@ Usage::
 
     cp .env.example .env
     # fill in credentials in .env
-    pip install httpx python-dotenv
+    pip install aiohttp python-dotenv
     python scripts/record_responses.py
 
 The recorded responses are committed — they're business data, not
@@ -32,7 +32,7 @@ Exit codes
 
 from __future__ import annotations
 
-import base64
+import asyncio
 import json
 import os
 import sys
@@ -40,15 +40,15 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import httpx
+    import aiohttp
 except ImportError:  # pragma: no cover
-    sys.stderr.write("error: httpx is not installed. Run: pip install httpx python-dotenv\n")
+    sys.stderr.write("error: aiohttp is not installed. Run: pip install aiohttp python-dotenv\n")
     sys.exit(1)
 
 try:
     from dotenv import load_dotenv
 except ImportError:  # pragma: no cover
-    sys.stderr.write("error: python-dotenv is not installed. Run: pip install httpx python-dotenv\n")
+    sys.stderr.write("error: python-dotenv is not installed. Run: pip install aiohttp python-dotenv\n")
     sys.exit(1)
 
 
@@ -88,36 +88,37 @@ class RecordingError(Exception):
     """Raised when recording a specific endpoint fails unexpectedly."""
 
 
-def fetch_token(token_url: str, client_id: str, client_secret: str) -> str:
+async def fetch_token(token_url: str, client_id: str, client_secret: str) -> str:
     """Fetch an OAuth2 access token using client credentials.
 
     Raises ConfigError on network/DNS/TLS issues and AuthError on HTTP errors
     or malformed responses.
     """
-    basic = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    timeout = aiohttp.ClientTimeout(total=30.0)
     try:
-        response = httpx.post(
-            token_url,
-            headers={"Authorization": f"Basic {basic}"},
-            data={"grant_type": "client_credentials"},
-            timeout=30.0,
-        )
-    except httpx.ConnectError as exc:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(
+                token_url,
+                data={"grant_type": "client_credentials"},
+                auth=aiohttp.BasicAuth(client_id, client_secret),
+            ) as response:
+                text = await response.text()
+                if response.status >= 400:
+                    raise AuthError(
+                        f"token endpoint returned {response.status}: {text[:500]}\n"
+                        "check SAP_MCM_CLIENT_ID and SAP_MCM_CLIENT_SECRET in .env"
+                    )
+                try:
+                    payload = json.loads(text)
+                except ValueError as exc:
+                    raise AuthError(f"token endpoint returned non-JSON body: {text[:200]}") from exc
+    except aiohttp.ClientConnectorError as exc:
         raise ConfigError(f"cannot reach token endpoint {token_url}: {exc}") from exc
-    except httpx.TimeoutException as exc:
+    except asyncio.TimeoutError as exc:
         raise ConfigError(f"timeout reaching token endpoint {token_url}: {exc}") from exc
-    except httpx.RequestError as exc:
+    except aiohttp.ClientError as exc:
         raise ConfigError(f"network error reaching token endpoint {token_url}: {exc}") from exc
 
-    if response.status_code >= 400:
-        raise AuthError(
-            f"token endpoint returned {response.status_code}: {response.text[:500]}\n"
-            "check SAP_MCM_CLIENT_ID and SAP_MCM_CLIENT_SECRET in .env"
-        )
-    try:
-        payload = response.json()
-    except ValueError as exc:
-        raise AuthError(f"token endpoint returned non-JSON body: {response.text[:200]}") from exc
     token = payload.get("access_token")
     if not isinstance(token, str) or not token:
         raise AuthError(f"token endpoint response missing 'access_token': {payload}")
@@ -139,27 +140,30 @@ def save(name: str, data: Any) -> None:
     print(f"  wrote {path.relative_to(REPO_ROOT)} ({path.stat().st_size} bytes)")
 
 
-def get(client: httpx.Client, base_url: str, path: str, **params: Any) -> Any:
+async def get(client: aiohttp.ClientSession, base_url: str, path: str, **params: Any) -> Any:
     """GET helper — returns parsed JSON.
 
-    Raises httpx.HTTPStatusError on 4xx/5xx so the caller can decide
+    Raises aiohttp.ClientResponseError on 4xx/5xx so the caller can decide
     whether to abort or skip. Raises RecordingError on unexpected
     non-HTTP failures (network errors, malformed JSON).
     """
     url = f"{base_url}{path}"
+    # aiohttp requires string query values; httpx tolerated ints.
+    str_params = {key: str(value) for key, value in params.items()}
     try:
-        response = client.get(url, params=params)
-    except httpx.RequestError as exc:
+        async with client.get(url, params=str_params) as response:
+            text = await response.text()
+            if response.status >= 400:
+                sys.stderr.write(f"  error {response.status} on {path}: {text[:500]}\n")
+                response.raise_for_status()
+            try:
+                return json.loads(text)
+            except ValueError as exc:
+                raise RecordingError(f"GET {path} returned non-JSON body: {text[:200]}") from exc
+    except aiohttp.ClientResponseError:
+        raise
+    except aiohttp.ClientError as exc:
         raise RecordingError(f"network error on GET {path}: {exc}") from exc
-
-    if response.status_code >= 400:
-        sys.stderr.write(f"  error {response.status_code} on {path}: {response.text[:500]}\n")
-        response.raise_for_status()
-
-    try:
-        return response.json()
-    except ValueError as exc:
-        raise RecordingError(f"GET {path} returned non-JSON body: {response.text[:200]}") from exc
 
 
 def first_id(collection: dict[str, Any]) -> str | None:
@@ -171,8 +175,8 @@ def first_id(collection: dict[str, Any]) -> str | None:
     return first_item
 
 
-def _record_pair(
-    client: httpx.Client,
+async def _record_pair(
+    client: aiohttp.ClientSession,
     base_url: str,
     label: str,
     list_path: str,
@@ -188,9 +192,9 @@ def _record_pair(
     """
     print(f"recording {label}...")
     try:
-        collection = get(client, base_url, list_path, **{"$top": 5, "$count": "true"})
-    except httpx.HTTPStatusError as exc:
-        msg = f"{label} list: HTTP {exc.response.status_code}"
+        collection = await get(client, base_url, list_path, **{"$top": 5, "$count": "true"})
+    except aiohttp.ClientResponseError as exc:
+        msg = f"{label} list: HTTP {exc.status}"
         sys.stderr.write(f"  {msg}\n")
         failures.append(msg)
         return
@@ -212,9 +216,9 @@ def _record_pair(
         return
 
     try:
-        entity = get(client, base_url, get_path_template.format(id=entity_id), **{"$expand": expand})
-    except httpx.HTTPStatusError as exc:
-        msg = f"{label} get({entity_id}): HTTP {exc.response.status_code}"
+        entity = await get(client, base_url, get_path_template.format(id=entity_id), **{"$expand": expand})
+    except aiohttp.ClientResponseError as exc:
+        msg = f"{label} get({entity_id}): HTTP {exc.status}"
         sys.stderr.write(f"  {msg}\n")
         failures.append(msg)
         return
@@ -230,15 +234,17 @@ def _record_pair(
         failures.append(f"{label} get save: {exc}")
 
 
-def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
+async def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
     """Record all known API responses. Returns a list of failure messages."""
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json;odata.metadata=minimal;IEEE754Compatible=true",
     }
     failures: list[str] = []
-    with httpx.Client(headers=headers, timeout=60.0) as client:
-        _record_pair(
+    timeout = aiohttp.ClientTimeout(total=60.0)
+    # ``raise_for_status=False`` keeps the manual status handling in get().
+    async with aiohttp.ClientSession(headers=headers, timeout=timeout) as client:
+        await _record_pair(
             client,
             base_url,
             "class",
@@ -248,7 +254,7 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
             preset_ids.get("class", ""),
             failures,
         )
-        _record_pair(
+        await _record_pair(
             client,
             base_url,
             "model",
@@ -258,7 +264,7 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
             preset_ids.get("model", ""),
             failures,
         )
-        _record_pair(
+        await _record_pair(
             client,
             base_url,
             "instance",
@@ -273,7 +279,7 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
         # component enabled; 403/404 is expected there and is not a failure.
         print("recording staged migration instances...")
         try:
-            staged = get(
+            staged = await get(
                 client,
                 base_url,
                 f"{MIGRATION_PATH}/StagedMigrationInstances",
@@ -284,11 +290,11 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
             except RecordingError as exc:
                 sys.stderr.write(f"  migration staged save failed: {exc}\n")
                 failures.append(f"migration staged save: {exc}")
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code in (403, 404):
-                print(f"  skipped (HTTP {exc.response.status_code}) — migration component not enabled")
+        except aiohttp.ClientResponseError as exc:
+            if exc.status in (403, 404):
+                print(f"  skipped (HTTP {exc.status}) — migration component not enabled")
             else:
-                msg = f"migration staged list: HTTP {exc.response.status_code}"
+                msg = f"migration staged list: HTTP {exc.status}"
                 sys.stderr.write(f"  {msg}\n")
                 failures.append(msg)
         except RecordingError as exc:
@@ -298,7 +304,7 @@ def record(base_url: str, token: str, preset_ids: dict[str, str]) -> list[str]:
     return failures
 
 
-def main() -> int:
+async def main() -> int:
     load_dotenv(REPO_ROOT / ".env")
 
     required = ["SAP_MCM_BASE_URL", "SAP_MCM_TOKEN_URL", "SAP_MCM_CLIENT_ID", "SAP_MCM_CLIENT_SECRET"]
@@ -321,7 +327,7 @@ def main() -> int:
 
     print(f"authenticating against {token_url}...")
     try:
-        token = fetch_token(token_url, client_id, client_secret)
+        token = await fetch_token(token_url, client_id, client_secret)
     except ConfigError as exc:
         sys.stderr.write(f"configuration error: {exc}\n")
         return 1
@@ -332,7 +338,7 @@ def main() -> int:
 
     print(f"recording from {base_url}...")
     print(f"  output directory: {OUTPUT_DIR.relative_to(REPO_ROOT)}")
-    failures = record(base_url, token, preset_ids)
+    failures = await record(base_url, token, preset_ids)
 
     if failures:
         sys.stderr.write("\nrecording completed with errors:\n")
@@ -347,4 +353,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(asyncio.run(main()))
