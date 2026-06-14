@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -32,6 +33,7 @@ type tokenSource struct {
 	expiresAt time.Time
 	mu        sync.Mutex
 	client    *http.Client // used exclusively for token requests
+	logger    *slog.Logger
 }
 
 // tokenResponse is the JSON body returned by the OAuth2 token endpoint.
@@ -41,13 +43,15 @@ type tokenResponse struct {
 	TokenType   string `json:"token_type"`
 }
 
-// newTokenSource creates a tokenSource for the given AuthConfig.
-func newTokenSource(cfg AuthConfig) *tokenSource {
+// newTokenSource creates a tokenSource for the given AuthConfig. The logger
+// receives a structured token-fetch event; it must be non-nil.
+func newTokenSource(cfg AuthConfig, logger *slog.Logger) *tokenSource {
 	return &tokenSource{
 		cfg: cfg,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
+		logger: logger,
 	}
 }
 
@@ -72,14 +76,19 @@ func (ts *tokenSource) Token(ctx context.Context) (string, error) {
 	return ts.token, nil
 }
 
-// fetchToken performs the OAuth2 client_credentials grant request.
+// fetchToken performs the OAuth2 client_credentials grant request. It emits a
+// single redaction-safe "mcm.token_fetch" event (the client secret, access
+// token, and response body are never logged).
 func (ts *tokenSource) fetchToken(ctx context.Context) (*tokenResponse, error) {
+	started := time.Now()
+
 	data := url.Values{
 		"grant_type": {"client_credentials"},
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ts.cfg.TokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
+		ts.logTokenFetch(ctx, started, 0, err)
 		return nil, fmt.Errorf("creating token request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -87,29 +96,71 @@ func (ts *tokenSource) fetchToken(ctx context.Context) (*tokenResponse, error) {
 
 	resp, err := ts.client.Do(req)
 	if err != nil {
+		ts.logTokenFetch(ctx, started, 0, err)
 		return nil, fmt.Errorf("executing token request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		ts.logTokenFetch(ctx, started, resp.StatusCode, err)
 		return nil, fmt.Errorf("reading token response: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		// Log only the status — never the response body, which could echo
+		// request details back.
+		ts.logTokenFetch(ctx, started, resp.StatusCode, fmt.Errorf("status %d", resp.StatusCode))
 		return nil, fmt.Errorf("token request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var tok tokenResponse
 	if err := json.Unmarshal(body, &tok); err != nil {
+		ts.logTokenFetch(ctx, started, resp.StatusCode, fmt.Errorf("malformed token response"))
 		return nil, fmt.Errorf("parsing token response: %w", err)
 	}
 
 	if tok.AccessToken == "" {
+		ts.logTokenFetch(ctx, started, resp.StatusCode, fmt.Errorf("token response missing access_token"))
 		return nil, fmt.Errorf("token response missing access_token")
 	}
 
+	ts.logTokenFetchOK(ctx, started, tok.ExpiresIn)
 	return &tok, nil
+}
+
+// logTokenFetch emits a failed token-fetch event. The error is sanitized by
+// the caller so that neither credentials nor the response body are logged.
+func (ts *tokenSource) logTokenFetch(ctx context.Context, started time.Time, status int, err error) {
+	if ts.logger == nil {
+		return
+	}
+	attrs := []slog.Attr{
+		slog.String("event", eventTokenFetch),
+		slog.String("token_url", ts.cfg.TokenURL),
+		slog.Float64("duration_ms", elapsedMS(started)),
+		slog.Bool("ok", false),
+		slog.String("error", err.Error()),
+	}
+	if status != 0 {
+		attrs = append(attrs, slog.Int("http_status", status))
+	}
+	ts.logger.LogAttrs(ctx, slog.LevelError, "mcm token fetch failed", attrs...)
+}
+
+// logTokenFetchOK emits a successful token-fetch event. The access token is
+// never logged; only its lifetime (expires_in) is recorded.
+func (ts *tokenSource) logTokenFetchOK(ctx context.Context, started time.Time, expiresIn int) {
+	if ts.logger == nil {
+		return
+	}
+	ts.logger.LogAttrs(ctx, slog.LevelInfo, "mcm token fetched",
+		slog.String("event", eventTokenFetch),
+		slog.String("token_url", ts.cfg.TokenURL),
+		slog.Float64("duration_ms", elapsedMS(started)),
+		slog.Bool("ok", true),
+		slog.Int("expires_in", expiresIn),
+	)
 }
 
 // authTransport is an http.RoundTripper that injects a Bearer token into
@@ -135,8 +186,8 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 // newAuthenticatedClient creates an http.Client that automatically adds
 // Bearer token authentication to every request. The token is obtained via
 // the OAuth2 client credentials grant and cached until shortly before expiry.
-func newAuthenticatedClient(cfg AuthConfig, timeout time.Duration) *http.Client {
-	ts := newTokenSource(cfg)
+func newAuthenticatedClient(cfg AuthConfig, timeout time.Duration, logger *slog.Logger) *http.Client {
+	ts := newTokenSource(cfg, logger)
 	return &http.Client{
 		Timeout: timeout,
 		Transport: &authTransport{

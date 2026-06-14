@@ -268,6 +268,28 @@ control (tail sampling — keep all errors/slow requests, sample the happy path)
 is best applied in your logging pipeline or collector, since the decision is
 made on the event's outcome.
 
+The **Go client** mirrors this with the standard library `log/slog`. Pass a
+`*slog.Logger` via `mcm.Config{Logger: ...}`; when omitted, logging is disabled
+(no output). Each request emits one record with the same fields
+(`event`, `request_id`, `http_method`, `url`, `http_status`, `duration_ms`,
+`response_bytes`, `ok`) and the same level-by-outcome mapping, and OAuth2 token
+fetches emit a redaction-safe `mcm.token_fetch` event.
+
+```go
+import (
+    "log/slog"
+    "os"
+
+    "github.com/Hochfrequenz/sap-mcm-client/mcm"
+)
+
+client := mcm.NewClient(mcm.Config{
+    BaseURL: "https://...",
+    Auth:    mcm.AuthConfig{ /* ... */ },
+    Logger:  slog.New(slog.NewJSONHandler(os.Stderr, nil)),
+})
+```
+
 ## Development
 
 ### Python
