@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime, timezone
 from io import BytesIO
-from typing import Any
 from uuid import UUID
 
-import httpx
+import aiohttp
 import pytest
 
 from sap_mcm_client import (
@@ -23,11 +23,12 @@ from sap_mcm_client._resources import TimeSeriesResource
 from .conftest import (
     BASE_URL,
     _decoded_url,
-    _json_response,
     _load_json,
-    _make_http_client,
-    _make_mock_transport,
+    captured_requests,
+    mock_client,
 )
+
+_ANY_RE = re.compile(r".*")
 
 # ===========================================================================
 # TimeSeriesResource - read endpoints
@@ -41,19 +42,17 @@ class TestTimeSeriesReadURLs:
     _EXT_ID = "1+1-1:1.29.0"
     _PATH_PREFIX = "/odata/v4/api/v1/TimeSeries/"
 
-    def _resource(self, fixture: dict[str, Any] | None = None) -> tuple[TimeSeriesResource, httpx.MockTransport]:
-        data = fixture if fixture is not None else _load_json("timeseries_data.json")
-        transport = _make_mock_transport(default_response=_json_response(data))
-        http_client = _make_http_client(transport)
-        return TimeSeriesResource(http_client, BASE_URL), transport
+    async def test_get_data_by_time_series_id_base(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            points = await resource.get_data(time_series_id=self._TS_ID)
+            captured = captured_requests(mocked)
 
-    def test_get_data_by_time_series_id_base(self) -> None:
-        resource, transport = self._resource()
-        points = resource.get_data(time_series_id=self._TS_ID)
         assert len(points) == 4
         assert isinstance(points[0], TimeSeriesDataPoint)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert f"{self._PATH_PREFIX}getTimeSeriesDataByTimeSeriesID?" in url
         # Single-quote literal escaping for the UUID
@@ -61,95 +60,120 @@ class TestTimeSeriesReadURLs:
         assert "fromDate" not in url
         assert "toDate" not in url
 
-    def test_get_data_by_time_series_id_since(self) -> None:
-        resource, transport = self._resource()
-        resource.get_data(time_series_id=self._TS_ID, from_date=date(2025, 2, 1))
+    async def test_get_data_by_time_series_id_since(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_data(time_series_id=self._TS_ID, from_date=date(2025, 2, 1))
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "getTimeSeriesDataByTimeSeriesIDSince?" in url
         assert "fromDate='2025-02-01'" in url
         assert "toDate" not in url
 
-    def test_get_data_by_time_series_id_in_period(self) -> None:
-        resource, transport = self._resource()
-        resource.get_data(
-            time_series_id=self._TS_ID,
-            from_date=date(2025, 2, 1),
-            to_date=date(2025, 2, 28),
-        )
+    async def test_get_data_by_time_series_id_in_period(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_data(
+                time_series_id=self._TS_ID,
+                from_date=date(2025, 2, 1),
+                to_date=date(2025, 2, 28),
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "getTimeSeriesDataByTimeSeriesIDInPeriod?" in url
         assert "fromDate='2025-02-01'" in url
         assert "toDate='2025-02-28'" in url
 
-    def test_get_data_by_external_id_base(self) -> None:
-        resource, transport = self._resource()
-        resource.get_data(external_id=self._EXT_ID)
+    async def test_get_data_by_external_id_base(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_data(external_id=self._EXT_ID)
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "getTimeSeriesDataByExternalID?" in url
         assert f"externalID='{self._EXT_ID}'" in url
 
-    def test_get_data_rejects_both_or_neither_identifiers(self) -> None:
-        resource, _ = self._resource()
-        with pytest.raises(ValueError):
-            resource.get_data()
-        with pytest.raises(ValueError):
-            resource.get_data(time_series_id=self._TS_ID, external_id=self._EXT_ID)
+    async def test_get_data_rejects_both_or_neither_identifiers(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload={}, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            with pytest.raises(ValueError):
+                await resource.get_data()
+            with pytest.raises(ValueError):
+                await resource.get_data(time_series_id=self._TS_ID, external_id=self._EXT_ID)
 
-    def test_get_data_rejects_to_date_without_from_date(self) -> None:
-        resource, _ = self._resource()
-        with pytest.raises(ValueError):
-            resource.get_data(time_series_id=self._TS_ID, to_date=date(2025, 2, 28))
+    async def test_get_data_rejects_to_date_without_from_date(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload={}, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            with pytest.raises(ValueError):
+                await resource.get_data(time_series_id=self._TS_ID, to_date=date(2025, 2, 28))
 
-    def test_get_history_by_time_series_id(self) -> None:
-        resource, transport = self._resource()
-        resource.get_history(time_series_id=self._TS_ID)
+    async def test_get_history_by_time_series_id(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_history(time_series_id=self._TS_ID)
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert f"{self._PATH_PREFIX}getTimeSeriesDataHistoryByTimeSeriesID?" in url
         assert f"timeSeriesID='{self._TS_ID}'" in url
 
-    def test_get_history_by_external_id_in_period(self) -> None:
-        resource, transport = self._resource()
-        resource.get_history(
-            external_id=self._EXT_ID,
-            from_date=date(2025, 2, 1),
-            to_date=date(2025, 2, 28),
-        )
+    async def test_get_history_by_external_id_in_period(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_history(
+                external_id=self._EXT_ID,
+                from_date=date(2025, 2, 1),
+                to_date=date(2025, 2, 28),
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "getTimeSeriesDataHistoryByExternalIDInPeriod?" in url
         assert f"externalID='{self._EXT_ID}'" in url
         assert "fromDate='2025-02-01'" in url
         assert "toDate='2025-02-28'" in url
 
-    def test_paging_params_forwarded(self) -> None:
-        resource, transport = self._resource()
-        resource.get_data(
-            time_series_id=self._TS_ID,
-            top=100,
-            skip=50,
-            order_by="timestamp desc",
-        )
+    async def test_paging_params_forwarded(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_data(
+                time_series_id=self._TS_ID,
+                top=100,
+                skip=50,
+                order_by="timestamp desc",
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "$top=100" in url
         assert "$skip=50" in url
         assert "$orderby=timestamp desc" in url
 
-    def test_single_quote_is_escaped_by_doubling(self) -> None:
-        resource, transport = self._resource()
-        resource.get_data(external_id="a'b")
+    async def test_single_quote_is_escaped_by_doubling(self) -> None:
+        data = _load_json("timeseries_data.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=data, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            await resource.get_data(external_id="a'b")
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         # OData V4 doubles embedded single quotes inside the string literal.
         assert "externalID='a''b'" in url
@@ -161,31 +185,34 @@ class TestTimeSeriesReadURLs:
 
 
 class TestTimeSeriesUpload:
-    def test_upload_without_upload_id_hits_uploadsc(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response({}))
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
+    async def test_upload_without_upload_id_hits_uploadsc(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.post(_ANY_RE, payload={}, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
 
-        resource.upload(BytesIO(b"ts payload"), filename="ts.csv")
+            await resource.upload(BytesIO(b"ts payload"), filename="ts.csv")
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert captured[0].method == "POST"
         url = _decoded_url(captured[0])
         assert "/api/v1/timeseries/uploadsc" in url
         assert "uploadID" not in url
         # The POST body is multipart form data
-        ct = captured[0].headers.get("content-type", "")
-        assert ct.startswith("multipart/")
+        assert isinstance(captured[0].data, aiohttp.FormData)
+        # No Content-Type override is sent, so aiohttp sets the multipart
+        # content type (with boundary) itself — the OData JSON content type
+        # must not leak onto the upload.
+        assert "Content-Type" not in captured[0].headers
 
-    def test_upload_with_upload_id_hits_upload_with_query(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response({}))
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
+    async def test_upload_with_upload_id_hits_upload_with_query(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.post(_ANY_RE, payload={}, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
 
-        upload_id = UUID("aaaaaaaa-bbbb-cccc-dddd-111122223333")
-        resource.upload(b"ts payload", upload_id=upload_id, filename="ts.csv")
+            upload_id = UUID("aaaaaaaa-bbbb-cccc-dddd-111122223333")
+            await resource.upload(b"ts payload", upload_id=upload_id, filename="ts.csv")
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "/api/v1/timeseries/upload?" in url
         assert f"uploadID={upload_id}" in url
@@ -200,87 +227,71 @@ class TestTimeSeriesUpload:
 class TestTimeSeriesDelete:
     _TS_ID = "123e4567-e89b-12d3-a456-426614174000"
 
-    def test_delete_single_by_uuid(self) -> None:
-        transport = _make_mock_transport(
-            default_response=httpx.Response(
-                status_code=204,
-                request=httpx.Request("DELETE", "https://example.com"),
+    async def test_delete_single_by_uuid(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.delete(_ANY_RE, status=204, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+
+            await resource.delete(
+                time_series_id=self._TS_ID,
+                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
             )
-        )
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
+            captured = captured_requests(mocked)
 
-        resource.delete(
-            time_series_id=self._TS_ID,
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
-        )
-
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert captured[0].method == "DELETE"
         url = _decoded_url(captured[0])
         assert f"/api/v1/timeseries/delete/{self._TS_ID}" in url
         assert "startTime=" in url
         assert "endTime=" in url
 
-    def test_delete_single_by_external_id(self) -> None:
-        transport = _make_mock_transport(
-            default_response=httpx.Response(
-                status_code=204,
-                request=httpx.Request("DELETE", "https://example.com"),
+    async def test_delete_single_by_external_id(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.delete(_ANY_RE, status=204, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+
+            await resource.delete(
+                external_id="1+1-1:1.29.0",
+                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
             )
-        )
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
+            captured = captured_requests(mocked)
 
-        resource.delete(
-            external_id="1+1-1:1.29.0",
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
-        )
-
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url = _decoded_url(captured[0])
         assert "/api/v1/timeseries/delete/externalId/1+1-1:1.29.0" in url
 
-    def test_delete_rejects_both_or_neither(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response({}))
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
+    async def test_delete_rejects_both_or_neither(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.delete(_ANY_RE, status=204, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
 
-        with pytest.raises(ValueError):
-            resource.delete(
+            with pytest.raises(ValueError):
+                await resource.delete(
+                    start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                    end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                )
+            with pytest.raises(ValueError):
+                await resource.delete(
+                    time_series_id="a",
+                    external_id="b",
+                    start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                    end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                )
+
+    async def test_delete_bulk_sends_delete_with_body(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.delete(_ANY_RE, payload={}, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+
+            req = DeleteTimeSeriesRequest(
+                uuids=[UUID(self._TS_ID)],
+                external_ids=["1+1-1:1.29.0"],
                 start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
                 end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
             )
-        with pytest.raises(ValueError):
-            resource.delete(
-                time_series_id="a",
-                external_id="b",
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
-            )
+            await resource.delete_bulk(req)
+            captured = captured_requests(mocked)
 
-    def test_delete_bulk_sends_delete_with_body(self) -> None:
-        transport = _make_mock_transport(
-            default_response=httpx.Response(
-                status_code=200,
-                json={},
-                request=httpx.Request("POST", "https://example.com"),
-            )
-        )
-        http_client = _make_http_client(transport)
-        resource = TimeSeriesResource(http_client, BASE_URL)
-
-        req = DeleteTimeSeriesRequest(
-            uuids=[UUID(self._TS_ID)],
-            external_ids=["1+1-1:1.29.0"],
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
-        )
-        resource.delete_bulk(req)
-
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert captured[0].method == "DELETE"
         url = _decoded_url(captured[0])
         assert "/api/v1/timeseries/delete/bulk" in url
@@ -298,20 +309,23 @@ class TestTimeSeriesDelete:
 
 
 class TestTimeSeriesErrors:
-    def test_401(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response(_load_json("error_401.json"), 401))
-        resource = TimeSeriesResource(_make_http_client(transport), BASE_URL)
-        with pytest.raises(MCMAuthenticationError):
-            resource.get_data(time_series_id="any")
+    async def test_401(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=_load_json("error_401.json"), status=401, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            with pytest.raises(MCMAuthenticationError):
+                await resource.get_data(time_series_id="any")
 
-    def test_403(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response(_load_json("error_403.json"), 403))
-        resource = TimeSeriesResource(_make_http_client(transport), BASE_URL)
-        with pytest.raises(MCMForbiddenError):
-            resource.get_data(time_series_id="any")
+    async def test_403(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=_load_json("error_403.json"), status=403, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            with pytest.raises(MCMForbiddenError):
+                await resource.get_data(time_series_id="any")
 
-    def test_404(self) -> None:
-        transport = _make_mock_transport(default_response=_json_response(_load_json("error_404.json"), 404))
-        resource = TimeSeriesResource(_make_http_client(transport), BASE_URL)
-        with pytest.raises(MCMNotFoundError):
-            resource.get_data(time_series_id="any")
+    async def test_404(self) -> None:
+        async with mock_client() as (mocked, client):
+            mocked.get(_ANY_RE, payload=_load_json("error_404.json"), status=404, repeat=True)
+            resource = TimeSeriesResource(client, BASE_URL)
+            with pytest.raises(MCMNotFoundError):
+                await resource.get_data(time_series_id="any")

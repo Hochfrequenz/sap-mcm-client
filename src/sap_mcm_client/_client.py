@@ -7,13 +7,13 @@ accessors for instances, classes, and models.
 
 Usage::
 
-    with MCMClient(
+    async with MCMClient(
         base_url="https://tenant.example.com",
         token_url="https://auth.example.com/oauth/token",
         client_id="my-client-id",
         client_secret="s3cret",
     ) as client:
-        instances = client.instances.list(top=10)
+        instances = await client.instances.list(top=10)
         for inst in instances.items:
             print(inst.id, inst.description)
 """
@@ -21,8 +21,6 @@ Usage::
 from __future__ import annotations
 
 from typing import Any
-
-import httpx
 
 from sap_mcm_client._auth import OAuth2ClientCredentials
 from sap_mcm_client._odata import ODATA_HEADERS
@@ -33,13 +31,16 @@ from sap_mcm_client._resources import (
     ModelResource,
     TimeSeriesResource,
 )
+from sap_mcm_client._resources._base import _AsyncHTTPClient
 
 
 class MCMClient:
-    """Typed client for the SAP Cloud for Utilities Foundation MCM APIs.
+    """Typed async client for the SAP Cloud for Utilities Foundation MCM APIs.
 
-    Creates an authenticated :class:`httpx.Client` and exposes the three
-    MCM API resources as properties.
+    Wraps an authenticated :class:`aiohttp.ClientSession` and exposes the
+    MCM API resources as properties. Use it as an async context manager so
+    the underlying session is opened on the running event loop and closed
+    cleanly on exit.
 
     Parameters
     ----------
@@ -74,7 +75,7 @@ class MCMClient:
             client_secret=client_secret,
         )
 
-        self._http = httpx.Client(
+        self._http = _AsyncHTTPClient(
             auth=auth,
             headers=ODATA_HEADERS,
             timeout=timeout,
@@ -115,12 +116,12 @@ class MCMClient:
 
     # -- lifecycle ----------------------------------------------------------
 
-    def close(self) -> None:
-        """Close the underlying HTTP connection pool."""
-        self._http.close()
+    async def close(self) -> None:
+        """Close the underlying HTTP session."""
+        await self._http.close()
 
-    def __enter__(self) -> MCMClient:
+    async def __aenter__(self) -> MCMClient:
         return self
 
-    def __exit__(self, *args: Any) -> None:
-        self.close()
+    async def __aexit__(self, *args: Any) -> None:
+        await self.close()

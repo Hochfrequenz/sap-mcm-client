@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 from unittest.mock import patch
 from uuid import UUID
 
-import httpx
 import pytest
 
 from sap_mcm_client import (
@@ -35,11 +35,13 @@ from .conftest import (
     BASE_URL,
     TOKEN_URL,
     _decoded_url,
-    _json_response,
     _load_json,
-    _make_client_with_transport,
-    _make_mock_transport,
+    _make_response,
+    captured_requests,
+    mock_client,
 )
+
+_INSTANCES_RE = re.compile(r".*/MCMInstances.*")
 
 # ---------------------------------------------------------------------------
 # MCMClient construction and lifecycle
@@ -47,9 +49,9 @@ from .conftest import (
 
 
 class TestMCMClientLifecycle:
-    """Tests for MCMClient creation and context manager protocol."""
+    """Tests for MCMClient creation and async context manager protocol."""
 
-    def test_creates_with_valid_params(self) -> None:
+    async def test_creates_with_valid_params(self) -> None:
         """MCMClient can be constructed without errors."""
         # We patch OAuth2ClientCredentials to avoid real token fetching
         with patch("sap_mcm_client._client.OAuth2ClientCredentials"):
@@ -60,12 +62,12 @@ class TestMCMClientLifecycle:
                 client_secret="my-secret",
             )
             assert client is not None
-            client.close()
+            await client.close()
 
-    def test_context_manager_protocol(self) -> None:
-        """MCMClient works as a context manager."""
+    async def test_context_manager_protocol(self) -> None:
+        """MCMClient works as an async context manager."""
         with patch("sap_mcm_client._client.OAuth2ClientCredentials"):
-            with MCMClient(
+            async with MCMClient(
                 base_url=BASE_URL,
                 token_url=TOKEN_URL,
                 client_id="my-id",
@@ -73,9 +75,9 @@ class TestMCMClientLifecycle:
             ) as client:
                 assert client is not None
 
-    def test_properties_return_correct_types(self) -> None:
+    async def test_properties_return_correct_types(self) -> None:
         with patch("sap_mcm_client._client.OAuth2ClientCredentials"):
-            with MCMClient(
+            async with MCMClient(
                 base_url=BASE_URL,
                 token_url=TOKEN_URL,
                 client_id="my-id",
@@ -85,7 +87,7 @@ class TestMCMClientLifecycle:
                 assert isinstance(client.classes, ClassResource)
                 assert isinstance(client.models, ModelResource)
 
-    def test_base_url_trailing_slash_stripped(self) -> None:
+    async def test_base_url_trailing_slash_stripped(self) -> None:
         with patch("sap_mcm_client._client.OAuth2ClientCredentials"):
             client = MCMClient(
                 base_url="https://tenant.example.com/",
@@ -94,7 +96,7 @@ class TestMCMClientLifecycle:
                 client_secret="my-secret",
             )
             assert client._base_url == "https://tenant.example.com"
-            client.close()
+            await client.close()
 
 
 # ---------------------------------------------------------------------------
@@ -106,84 +108,52 @@ class TestErrorMapping:
     """Tests for HTTP status code to exception type mapping."""
 
     def test_401_raises_authentication_error(self, error_401_json: dict[str, Any]) -> None:
-        response = httpx.Response(
-            status_code=401,
-            json=error_401_json,
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(401, json_body=error_401_json)
         with pytest.raises(MCMAuthenticationError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.status_code == 401
         assert "Unauthorized" in str(exc_info.value)
 
     def test_403_raises_forbidden_error(self, error_403_json: dict[str, Any]) -> None:
-        response = httpx.Response(
-            status_code=403,
-            json=error_403_json,
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(403, json_body=error_403_json)
         with pytest.raises(MCMForbiddenError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.status_code == 403
         assert "Not authorized" in str(exc_info.value)
 
     def test_404_raises_not_found_error(self, error_404_json: dict[str, Any]) -> None:
-        response = httpx.Response(
-            status_code=404,
-            json=error_404_json,
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(404, json_body=error_404_json)
         with pytest.raises(MCMNotFoundError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.status_code == 404
         assert "not found" in str(exc_info.value)
 
     def test_400_raises_validation_error(self) -> None:
-        response = httpx.Response(
-            status_code=400,
-            json={"error": {"message": "Invalid request payload"}},
-            request=httpx.Request("POST", "https://example.com"),
-        )
+        response = _make_response(400, json_body={"error": {"message": "Invalid request payload"}})
         with pytest.raises(MCMValidationError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.status_code == 400
 
     def test_500_raises_generic_api_error(self) -> None:
-        response = httpx.Response(
-            status_code=500,
-            text="Internal Server Error",
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(500, text="Internal Server Error")
         with pytest.raises(MCMAPIError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.status_code == 500
 
     def test_200_does_not_raise(self) -> None:
-        response = httpx.Response(
-            status_code=200,
-            json={"value": []},
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(200, json_body={"value": []})
         # Should not raise
         _raise_for_status(response)
 
     def test_error_detail_is_captured(self, error_404_json: dict[str, Any]) -> None:
-        response = httpx.Response(
-            status_code=404,
-            json=error_404_json,
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(404, json_body=error_404_json)
         with pytest.raises(MCMNotFoundError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.detail is not None
         assert "error" in exc_info.value.detail
 
     def test_error_without_json_body(self) -> None:
-        response = httpx.Response(
-            status_code=502,
-            text="Bad Gateway",
-            request=httpx.Request("GET", "https://example.com"),
-        )
+        response = _make_response(502, text="Bad Gateway")
         with pytest.raises(MCMAPIError) as exc_info:
             _raise_for_status(response)
         assert exc_info.value.detail is None
@@ -217,20 +187,21 @@ class TestExceptionHierarchy:
 
 
 # ---------------------------------------------------------------------------
-# InstanceResource with mock transport
+# InstanceResource with mocked HTTP
 # ---------------------------------------------------------------------------
 
 
 class TestInstanceResource:
-    """Tests for the InstanceResource using mock HTTP transport."""
+    """Tests for the InstanceResource using mocked HTTP responses."""
 
-    def test_list_instances(self) -> None:
+    async def test_list_instances(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        result = resource.list(top=10, count=True)
+            result = await resource.list(top=10, count=True)
+            captured = captured_requests(mocked)
 
         assert isinstance(result, ListResponse)
         assert len(result.items) == 2
@@ -238,47 +209,46 @@ class TestInstanceResource:
         assert result.items[0].id_text == "INST-79"
 
         # Verify the request URL contains expected params
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert len(captured) == 1
         url_str = _decoded_url(captured[0])
         assert "$top=10" in url_str
         assert "$count=true" in url_str
 
-    def test_list_instances_with_filters(self) -> None:
+    async def test_list_instances_with_filters(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        _ = resource.list(
-            division=Division.ELECTRICITY,
-            overall_status=OverallStatus.ACTIVE,
-        )
+            await resource.list(
+                division=Division.ELECTRICITY,
+                overall_status=OverallStatus.ACTIVE,
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert "division_code" in url_str
         assert "EL" in url_str
         assert "overallStatus_code" in url_str
         assert "ACTIVE" in url_str
 
-    def test_get_instance(self) -> None:
+    async def test_get_instance(self) -> None:
         data = _load_json("instance_get.json")
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(responses={f"/MCMInstances({instance_id})": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        result = resource.get(instance_id, include=["all"])
+            result = await resource.get(instance_id, include=["all"])
+            captured = captured_requests(mocked)
 
         assert isinstance(result, MeasurementConceptInstance)
         assert result.id == UUID(instance_id)
         assert result.id_text == "INST-79"
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert "$expand=*" in _decoded_url(captured[0])
 
-    def test_create_instance_sends_post(self) -> None:
+    async def test_create_instance_sends_post(self) -> None:
         """Create sends a POST with the correct JSON body.
 
         We call _request directly because the library's create() uses
@@ -286,23 +256,23 @@ class TestInstanceResource:
         that stdlib json cannot serialize. This is a known limitation.
         """
         response_data = _load_json("instance_get.json")
-        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(response_data, 201)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=response_data, status=201, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        create_data = MeasurementConceptInstanceCreate(
-            description="New test instance",
-            measurement_model_id=UUID("ffffffff-2222-2222-2222-100000000001"),
-            division_code=Division.ELECTRICITY,
-        )
-        # Use mode="json" to get JSON-serializable dict, then call _request
-        json_body = create_data.model_dump(by_alias=True, exclude_none=True, mode="json")
-        resp = resource._request("POST", "/MCMInstances", json=json_body)
-        result = parse_entity(resp.json(), MeasurementConceptInstance)
+            create_data = MeasurementConceptInstanceCreate(
+                description="New test instance",
+                measurement_model_id=UUID("ffffffff-2222-2222-2222-100000000001"),
+                division_code=Division.ELECTRICITY,
+            )
+            # Use mode="json" to get JSON-serializable dict, then call _request
+            json_body = create_data.model_dump(by_alias=True, exclude_none=True, mode="json")
+            resp = await resource._request("POST", "/MCMInstances", json=json_body)
+            result = parse_entity(resp.json(), MeasurementConceptInstance)
+            captured = captured_requests(mocked)
 
         assert isinstance(result, MeasurementConceptInstance)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         assert captured[0].method == "POST"
         body = json.loads(captured[0].content)
         assert body["measurementModel_id"] == "ffffffff-2222-2222-2222-100000000001"
@@ -326,28 +296,54 @@ class TestInstanceResource:
         assert dumped["measurementModel_id"] == "ffffffff-2222-2222-2222-100000000001"
         assert dumped["division_code"] == "EL"
 
-    def test_list_instances_with_include(self) -> None:
+    async def test_list_instances_with_include(self) -> None:
         data = _load_json("instance_list.json")
-        transport = _make_mock_transport(responses={"/MCMInstances": _json_response(data)})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        resource.list(include=["metering_locations", "actors"])
+            await resource.list(include=["metering_locations", "actors"])
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         decoded = _decoded_url(captured[0])
         assert "$expand=" in decoded
         assert "meteringLocations" in decoded
         assert "actors" in decoded
 
-    def test_instance_404_raises(self) -> None:
+    async def test_instance_404_raises(self) -> None:
         error_data = _load_json("error_404.json")
-        transport = _make_mock_transport(default_response=_json_response(error_data, 404))
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=error_data, status=404, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        with pytest.raises(MCMNotFoundError):
-            resource.get("01234567-89ab-cdef-0123-456789abcdef")
+            with pytest.raises(MCMNotFoundError):
+                await resource.get("01234567-89ab-cdef-0123-456789abcdef")
+
+    async def test_json_write_sends_odata_content_type(self) -> None:
+        """JSON bodies carry the OData content type (with IEEE754Compatible)."""
+        response_data = _load_json("instance_get.json")
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=response_data, status=201, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
+
+            await resource._request("POST", "/MCMInstances", json={"description": "x"})
+            captured = captured_requests(mocked)
+
+        content_type = captured[0].headers.get("Content-Type", "")
+        assert "application/json" in content_type
+        assert "IEEE754Compatible=true" in content_type
+
+    async def test_get_sends_no_content_type(self) -> None:
+        """Bodiless GET requests do not carry a Content-Type header."""
+        data = _load_json("instance_list.json")
+        async with mock_client() as (mocked, client):
+            mocked.get(_INSTANCES_RE, payload=data, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
+
+            await resource.list()
+            captured = captured_requests(mocked)
+
+        assert "Content-Type" not in captured[0].headers
 
 
 # ---------------------------------------------------------------------------
@@ -359,154 +355,131 @@ class TestLifecycleActions:
     """Tests that lifecycle actions hit the correct URL paths.
 
     These tests verify the URL construction and HTTP method used by each
-    lifecycle action. We use a mock transport that captures requests
-    and returns minimal valid responses.
+    lifecycle action, capturing the request and returning minimal valid
+    responses.
     """
 
     @staticmethod
-    def _minimal_instance_response() -> httpx.Response:
+    def _minimal_instance_response() -> dict[str, Any]:
         """A minimal valid instance response for lifecycle action tests."""
-        return _json_response(
-            {
-                "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                "idText": "INST-79",
-            }
-        )
+        return {
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "idText": "INST-79",
+        }
 
-    def test_init_change_url(self) -> None:
+    async def test_init_change_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(responses={"MCMService.initChange": self._minimal_instance_response()})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=self._minimal_instance_response(), repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        from sap_mcm_client.types_actions import InitChangeRequest
+            from sap_mcm_client.types_actions import InitChangeRequest
 
-        data = InitChangeRequest.model_validate(
-            {
-                "dataForNewInstanceVersion": [
-                    {
-                        "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
-                    }
-                ]
-            }
-        )
-        # Use mode="json" to get JSON-serializable types from model_dump
-        json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
-        # Manually call _request to test URL construction
-        _ = resource._request(
-            "POST",
-            f"/MCMInstances({instance_id})/MCMService.initChange",
-            json=json_body,
-        )
+            data = InitChangeRequest.model_validate(
+                {
+                    "dataForNewInstanceVersion": [
+                        {
+                            "measurementModel_id": "ffffffff-2222-2222-2222-100000000001",
+                        }
+                    ]
+                }
+            )
+            # Use mode="json" to get JSON-serializable types from model_dump
+            json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
+            # Manually call _request to test URL construction
+            await resource._request(
+                "POST",
+                f"/MCMInstances({instance_id})/MCMService.initChange",
+                json=json_body,
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert f"/MCMInstances({instance_id})/MCMService.initChange" in url_str
         assert captured[0].method == "POST"
 
-    def test_init_shutdown_url(self) -> None:
+    async def test_init_shutdown_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(responses={"MCMService.initShutdown": self._minimal_instance_response()})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=self._minimal_instance_response(), repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        from sap_mcm_client.types_actions import InitShutdownRequest
+            from sap_mcm_client.types_actions import InitShutdownRequest
 
-        data = InitShutdownRequest.model_validate({"dataForNewInstanceVersion": [{"changeProcesses": [{}]}]})
-        json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
-        resource._request(
-            "POST",
-            f"/MCMInstances({instance_id})/MCMService.initShutdown",
-            json=json_body,
-        )
+            data = InitShutdownRequest.model_validate({"dataForNewInstanceVersion": [{"changeProcesses": [{}]}]})
+            json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
+            await resource._request(
+                "POST",
+                f"/MCMInstances({instance_id})/MCMService.initShutdown",
+                json=json_body,
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert f"/MCMInstances({instance_id})/MCMService.initShutdown" in url_str
 
-    def test_init_version_cancel_url(self) -> None:
+    async def test_init_version_cancel_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        transport = _make_mock_transport(responses={"MCMService.initVersionCancel": self._minimal_instance_response()})
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, payload=self._minimal_instance_response(), repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        from sap_mcm_client.types_actions import InitVersionCancelRequest
+            from sap_mcm_client.types_actions import InitVersionCancelRequest
 
-        data = InitVersionCancelRequest.model_validate(
-            {"dataForNewInstanceVersion": {"changeProcesses": [{"cancellationReason": "test"}]}}
-        )
-        json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
-        resource._request(
-            "POST",
-            f"/MCMInstances({instance_id})/MCMService.initVersionCancel",
-            json=json_body,
-        )
+            data = InitVersionCancelRequest.model_validate(
+                {"dataForNewInstanceVersion": {"changeProcesses": [{"cancellationReason": "test"}]}}
+            )
+            json_body = data.model_dump(by_alias=True, exclude_none=True, mode="json")
+            await resource._request(
+                "POST",
+                f"/MCMInstances({instance_id})/MCMService.initVersionCancel",
+                json=json_body,
+            )
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert f"/MCMInstances({instance_id})/MCMService.initVersionCancel" in url_str
 
-    def test_notify_device_removed_url(self) -> None:
+    async def test_notify_device_removed_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         melo_id = "11111111-aaaa-bbbb-cccc-000000000001"
-        transport = _make_mock_transport(
-            responses={
-                "notifySingleDeviceRemoved": httpx.Response(
-                    status_code=204,
-                    request=httpx.Request("POST", "https://example.com"),
-                )
-            }
-        )
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, status=204, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        resource.notify_device_removed(instance_id, melo_id)
+            await resource.notify_device_removed(instance_id, melo_id)
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert (
             f"/MCMInstances({instance_id})/meteringLocations({melo_id})/MCMService.notifySingleDeviceRemoved" in url_str
         )
 
-    def test_notify_market_location_removed_url(self) -> None:
+    async def test_notify_market_location_removed_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         malo_id = "44444444-aaaa-bbbb-cccc-000000000001"
-        transport = _make_mock_transport(
-            responses={
-                "notifySingleMarketLocationRemoved": httpx.Response(
-                    status_code=204,
-                    request=httpx.Request("POST", "https://example.com"),
-                )
-            }
-        )
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, status=204, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        resource.notify_market_location_removed(instance_id, malo_id)
+            await resource.notify_market_location_removed(instance_id, malo_id)
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert (
             f"/MCMInstances({instance_id})/marketLocations({malo_id})/MCMService.notifySingleMarketLocationRemoved"
             in url_str
         )
 
-    def test_notify_final_data_entry_ready_url(self) -> None:
+    async def test_notify_final_data_entry_ready_url(self) -> None:
         instance_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         cp_id = "aaaaaaaa-bbbb-cccc-dddd-000000000001"
-        transport = _make_mock_transport(
-            responses={
-                "notifyFinalDataEntryReady": httpx.Response(
-                    status_code=204,
-                    request=httpx.Request("POST", "https://example.com"),
-                )
-            }
-        )
-        http_client, base_url = _make_client_with_transport(transport)
-        resource = InstanceResource(http_client, base_url)
+        async with mock_client() as (mocked, client):
+            mocked.post(_INSTANCES_RE, status=204, repeat=True)
+            resource = InstanceResource(client, BASE_URL)
 
-        resource.notify_final_data_entry_ready(instance_id, cp_id)
+            await resource.notify_final_data_entry_ready(instance_id, cp_id)
+            captured = captured_requests(mocked)
 
-        captured = transport._captured_requests  # type: ignore[attr-defined]
         url_str = _decoded_url(captured[0])
         assert f"/changeProcesses({cp_id})/processData/MCMService.notifyFinalDataEntryReady" in url_str

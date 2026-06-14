@@ -5,8 +5,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from uuid import UUID
 
-import httpx
-
 from sap_mcm_client._odata import (
     CLASS_EXPAND_MAP,
     ListResponse,
@@ -15,7 +13,7 @@ from sap_mcm_client._odata import (
     parse_collection,
     parse_entity,
 )
-from sap_mcm_client._resources._base import _BASE_PATH, _raise_for_status
+from sap_mcm_client._resources._base import _BASE_PATH, _AsyncHTTPClient, _raise_for_status, _Response
 from sap_mcm_client.enums import Division
 from sap_mcm_client.types_class import MeasurementConceptClass
 
@@ -26,26 +24,26 @@ class ClassResource:
     Parameters
     ----------
     client:
-        The shared :class:`httpx.Client`.
+        The shared authenticated async HTTP client.
     base_url:
         The root URL of the MCM API.
     """
 
-    def __init__(self, client: httpx.Client, base_url: str) -> None:
+    def __init__(self, client: _AsyncHTTPClient, base_url: str) -> None:
         self._client = client
         self._base_url = base_url
 
     def _url(self, path: str) -> str:
         return f"{self._base_url}{_BASE_PATH}{path}"
 
-    def _request(
+    async def _request(
         self,
         method: str,
         path: str,
         *,
         params: dict[str, str] | None = None,
-    ) -> httpx.Response:
-        response = self._client.request(
+    ) -> _Response:
+        response = await self._client.request(
             method,
             self._url(path),
             params=params,
@@ -53,7 +51,7 @@ class ClassResource:
         _raise_for_status(response)
         return response
 
-    def list(
+    async def list(
         self,
         *,
         include: Sequence[str] | None = None,
@@ -98,10 +96,10 @@ class ClassResource:
             filters=filters if filters else None,
         )
 
-        resp = self._request("GET", "/MeasurementConceptClasses", params=params)
+        resp = await self._request("GET", "/MeasurementConceptClasses", params=params)
         return parse_collection(resp.json(), MeasurementConceptClass)
 
-    def get(
+    async def get(
         self,
         class_id: UUID | str,
         *,
@@ -123,7 +121,7 @@ class ClassResource:
         """
         expand = build_expand(include, CLASS_EXPAND_MAP)
         params = build_query_params(expand=expand)
-        resp = self._request(
+        resp = await self._request(
             "GET",
             f"/MeasurementConceptClasses({str(class_id)})",
             params=params,

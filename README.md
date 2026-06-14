@@ -65,36 +65,46 @@ Module / API docs: [pkg.go.dev/github.com/Hochfrequenz/sap-mcm-client/mcm](https
 
 ### Python
 
+The Python client is **async** (built on `aiohttp`); call it from within an
+event loop and `await` each operation.
+
 ```python
+import asyncio
+
 from sap_mcm_client import MCMClient, Division, OverallStatus
 
-with MCMClient(
-    base_url="https://c4u-foundation-mcm-service.cfapps.eu10.hana.ondemand.com",
-    token_url="https://mysubaccount.authentication.eu10.hana.ondemand.com/oauth/token",
-    client_id="...",
-    client_secret="...",
-) as client:
-    # List instances with typed filters — no OData query strings needed
-    instances = client.instances.list(
-        division=Division.ELECTRICITY,
-        overall_status=OverallStatus.ACTIVE,
-        top=50,
-    )
-    for instance in instances.items:
-        print(f"{instance.id_text}: {instance.description}")
 
-    # Fetch one instance with full expansion
-    instance = client.instances.get(
-        "01234567-89ab-cdef-0123-456789abcdef",
-        include=["all"],
-    )
-    for metering_location in instance.metering_locations:
-        for task in metering_location.metering_tasks:
-            print(task.register_code)
+async def main() -> None:
+    async with MCMClient(
+        base_url="https://c4u-foundation-mcm-service.cfapps.eu10.hana.ondemand.com",
+        token_url="https://mysubaccount.authentication.eu10.hana.ondemand.com/oauth/token",
+        client_id="...",
+        client_secret="...",
+    ) as client:
+        # List instances with typed filters — no OData query strings needed
+        instances = await client.instances.list(
+            division=Division.ELECTRICITY,
+            overall_status=OverallStatus.ACTIVE,
+            top=50,
+        )
+        for instance in instances.items:
+            print(f"{instance.id_text}: {instance.description}")
 
-    # List classes and models
-    classes = client.classes.list(division=Division.ELECTRICITY)
-    models = client.models.list(include=["market_locations"])
+        # Fetch one instance with full expansion
+        instance = await client.instances.get(
+            "01234567-89ab-cdef-0123-456789abcdef",
+            include=["all"],
+        )
+        for metering_location in instance.metering_locations:
+            for task in metering_location.metering_tasks:
+                print(task.register_code)
+
+        # List classes and models
+        classes = await client.classes.list(division=Division.ELECTRICITY)
+        models = await client.models.list(include=["market_locations"])
+
+
+asyncio.run(main())
 ```
 
 ### Go
@@ -183,7 +193,7 @@ Be honest about what this client can and can't do today:
 from sap_mcm_client import MCMClient, MCMNotFoundError, MCMForbiddenError
 
 try:
-    instance = client.instances.get("some-uuid")
+    instance = await client.instances.get("some-uuid")
 except MCMNotFoundError:
     print("Instance does not exist")
 except MCMForbiddenError as e:

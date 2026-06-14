@@ -6,13 +6,15 @@ from datetime import date, datetime
 from typing import Any, BinaryIO
 from uuid import UUID
 
-import httpx
+import aiohttp
 
 from sap_mcm_client._resources._base import (
     _TIMESERIES_ODATA_BASE_PATH,
     _TIMESERIES_REST_BASE_PATH,
+    _AsyncHTTPClient,
     _quote_odata_literal,
     _raise_for_status,
+    _Response,
 )
 from sap_mcm_client.types_timeseries import DeleteTimeSeriesRequest, TimeSeriesDataPoint
 
@@ -32,12 +34,13 @@ class TimeSeriesResource:
     Parameters
     ----------
     client:
-        The shared :class:`httpx.Client` configured with authentication.
+        The shared authenticated async HTTP client configured with
+        authentication.
     base_url:
         The root URL of the Time Series service (same host as MCM).
     """
 
-    def __init__(self, client: httpx.Client, base_url: str) -> None:
+    def __init__(self, client: _AsyncHTTPClient, base_url: str) -> None:
         self._client = client
         self._base_url = base_url
 
@@ -49,23 +52,23 @@ class TimeSeriesResource:
     def _rest_url(self, path: str) -> str:
         return f"{self._base_url}{_TIMESERIES_REST_BASE_PATH}{path}"
 
-    def _request(
+    async def _request(
         self,
         method: str,
         url: str,
         *,
         json: Any | None = None,
         params: dict[str, str] | None = None,
-        files: dict[str, Any] | None = None,
-    ) -> httpx.Response:
-        # ``files`` forces httpx into multipart mode; in that case ``json``
-        # must be None to avoid colliding content-type headers.
-        response = self._client.request(
+        data: aiohttp.FormData | None = None,
+    ) -> _Response:
+        # ``data`` carries the multipart body for uploads; in that case
+        # ``json`` must be None to avoid colliding content-type headers.
+        response = await self._client.request(
             method,
             url,
             json=json,
             params=params,
-            files=files,
+            data=data,
         )
         _raise_for_status(response)
         return response
@@ -124,9 +127,9 @@ class TimeSeriesResource:
 
         return by_suffix + period_suffix, params
 
-    def _get_points(self, function_base: str, params: dict[str, str]) -> list[TimeSeriesDataPoint]:
+    async def _get_points(self, function_base: str, params: dict[str, str]) -> list[TimeSeriesDataPoint]:
         url = self._odata_url(f"/{function_base}")
-        resp = self._request("GET", url, params=params)
+        resp = await self._request("GET", url, params=params)
         body = resp.json()
         # The OData V4 envelope wraps the array in a ``value`` key.
         raw_items: list[dict[str, Any]]
@@ -140,7 +143,7 @@ class TimeSeriesResource:
 
     # -- public API ---------------------------------------------------------
 
-    def get_data(
+    async def get_data(
         self,
         *,
         time_series_id: UUID | str | None = None,
@@ -194,9 +197,9 @@ class TimeSeriesResource:
             skip=skip,
             order_by=order_by,
         )
-        return self._get_points(f"getTimeSeriesData{suffix}", params)
+        return await self._get_points(f"getTimeSeriesData{suffix}", params)
 
-    def get_history(
+    async def get_history(
         self,
         *,
         time_series_id: UUID | str | None = None,
@@ -226,9 +229,9 @@ class TimeSeriesResource:
             skip=skip,
             order_by=order_by,
         )
-        return self._get_points(f"getTimeSeriesDataHistory{suffix}", params)
+        return await self._get_points(f"getTimeSeriesDataHistory{suffix}", params)
 
-    def upload(
+    async def upload(
         self,
         file: bytes | BinaryIO,
         *,
@@ -255,17 +258,18 @@ class TimeSeriesResource:
             the target time series.
         """
         multipart_name = filename if filename is not None else "upload.bin"
-        files = {"file": (multipart_name, file)}
+        form = aiohttp.FormData()
+        form.add_field("file", file, filename=multipart_name)
 
         if upload_id is not None:
             url = self._rest_url("/upload")
             params = {"uploadID": str(upload_id)}
-            self._request("POST", url, params=params, files=files)
+            await self._request("POST", url, params=params, data=form)
         else:
             url = self._rest_url("/uploadsc")
-            self._request("POST", url, files=files)
+            await self._request("POST", url, data=form)
 
-    def delete(
+    async def delete(
         self,
         *,
         time_series_id: UUID | str | None = None,
@@ -304,9 +308,9 @@ class TimeSeriesResource:
             assert external_id is not None
             url = self._rest_url(f"/delete/externalId/{external_id}")
 
-        self._request("DELETE", url, params=params)
+        await self._request("DELETE", url, params=params)
 
-    def delete_bulk(self, request: DeleteTimeSeriesRequest) -> None:
+    async def delete_bulk(self, request: DeleteTimeSeriesRequest) -> None:
         """Delete time series data in bulk by UUID and/or external ID lists.
 
         The server enforces a maximum of 100 identifiers per request and
@@ -321,4 +325,4 @@ class TimeSeriesResource:
         """
         url = self._rest_url("/delete/bulk")
         payload = request.model_dump(by_alias=True, exclude_none=True, mode="json")
-        self._request("DELETE", url, json=payload)
+        await self._request("DELETE", url, json=payload)

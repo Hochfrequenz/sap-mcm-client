@@ -1,25 +1,26 @@
 """OAuth2 Client Credentials authentication for the SAP MCM APIs.
 
 This module implements the standard OAuth2 Client Credentials flow used by
-SAP Cloud Foundry / XSUAA service bindings. It plugs into ``httpx``'s auth
-protocol so that token acquisition and refresh happen transparently.
+SAP Cloud Foundry / XSUAA service bindings. It exposes an async token
+provider that obtains and caches a bearer token, which the HTTP layer
+attaches to every outgoing request.
 
 The token endpoint URL, client ID, and client secret are typically found in
 the ``credentials`` block of an SAP BTP service binding (the ``url``,
 ``clientid``, and ``clientsecret`` fields under the ``uaa`` key).
 
-Thread safety: token fetching and caching are guarded by a
-:class:`threading.Lock`, making this class safe for use with
-:class:`httpx.Client` from multiple threads.
+Concurrency safety: token fetching and caching are guarded by an
+:class:`asyncio.Lock`, making this class safe for concurrent use from
+multiple coroutines sharing a single :class:`aiohttp.ClientSession`.
 """
 
 from __future__ import annotations
 
-import threading
+import asyncio
+import json
 import time
-from typing import Generator
 
-import httpx
+import aiohttp
 
 
 class MCMAuthError(Exception):
@@ -30,8 +31,8 @@ class MCMAuthError(Exception):
     """
 
 
-class OAuth2ClientCredentials(httpx.Auth):
-    """httpx-compatible auth that obtains and caches an OAuth2 bearer token.
+class OAuth2ClientCredentials:
+    """Async auth provider that obtains and caches an OAuth2 bearer token.
 
     Uses the *Client Credentials* grant type: a POST to the token endpoint
     with HTTP Basic authentication (``client_id:client_secret``) and
@@ -68,35 +69,31 @@ class OAuth2ClientCredentials(httpx.Auth):
 
         self._token: str | None = None
         self._expires_at: float = 0.0
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()
 
-    def auth_flow(
-        self,
-        request: httpx.Request,
-    ) -> Generator[httpx.Request, httpx.Response, None]:
-        """Attach a valid bearer token to every outgoing request.
+    async def async_auth_header(self) -> str:
+        """Return the ``Authorization`` header value for an outgoing request.
 
         If the cached token is missing or about to expire, a fresh token is
-        obtained first. This method conforms to the ``httpx.Auth`` protocol.
+        obtained first.
         """
-        token = self._ensure_token()
-        request.headers["Authorization"] = f"Bearer {token}"
-        yield request
+        token = await self._ensure_token()
+        return f"Bearer {token}"
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _ensure_token(self) -> str:
+    async def _ensure_token(self) -> str:
         """Return a valid access token, fetching a new one if necessary."""
-        with self._lock:
+        async with self._lock:
             if self._token is not None and time.monotonic() < self._expires_at:
                 return self._token
-            self._fetch_token()
+            await self._fetch_token()
             assert self._token is not None  # noqa: S101 — guaranteed by _fetch_token
             return self._token
 
-    def _fetch_token(self) -> None:
+    async def _fetch_token(self) -> None:
         """POST to the token endpoint and cache the result.
 
         Raises
@@ -105,18 +102,22 @@ class OAuth2ClientCredentials(httpx.Auth):
             If the HTTP request fails or the response is malformed.
         """
         try:
-            with httpx.Client() as client:
-                response = client.post(
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
                     self._token_url,
                     data={"grant_type": "client_credentials"},
-                    auth=(self._client_id, self._client_secret),
-                )
-                response.raise_for_status()
-        except httpx.HTTPError as exc:
+                    auth=aiohttp.BasicAuth(self._client_id, self._client_secret),
+                ) as response:
+                    response.raise_for_status()
+                    body = await response.text()
+        except aiohttp.ClientError as exc:
             raise MCMAuthError(f"Failed to obtain OAuth2 token from {self._token_url}: {exc}") from exc
 
+        # Parse the body separately so a non-JSON or incomplete payload is
+        # reported as a malformed response rather than a transport failure.
+        # ``json.loads`` raises ``JSONDecodeError`` (a ``ValueError``).
         try:
-            payload = response.json()
+            payload = json.loads(body)
             access_token: str = payload["access_token"]
             expires_in: int = int(payload["expires_in"])
         except (KeyError, TypeError, ValueError) as exc:

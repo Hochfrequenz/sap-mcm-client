@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from typing import Any
 from uuid import UUID
 
-import httpx
-
 from sap_mcm_client._odata import (
     INSTANCE_EXPAND_MAP,
     ListResponse,
@@ -16,7 +14,7 @@ from sap_mcm_client._odata import (
     parse_collection,
     parse_entity,
 )
-from sap_mcm_client._resources._base import _BASE_PATH, _raise_for_status
+from sap_mcm_client._resources._base import _BASE_PATH, _AsyncHTTPClient, _raise_for_status, _Response
 from sap_mcm_client.enums import Division, OverallStatus
 from sap_mcm_client.types_actions import (
     InitChangeRequest,
@@ -42,15 +40,15 @@ class InstanceResource:
     Parameters
     ----------
     client:
-        The shared :class:`httpx.Client` configured with authentication
-        and default OData headers.
+        The shared authenticated async HTTP client configured with
+        authentication and default OData headers.
     base_url:
         The root URL of the MCM API (e.g.
         ``"https://tenant.example.com"``).  The OData path prefix is
         appended automatically.
     """
 
-    def __init__(self, client: httpx.Client, base_url: str) -> None:
+    def __init__(self, client: _AsyncHTTPClient, base_url: str) -> None:
         self._client = client
         self._base_url = base_url
 
@@ -59,15 +57,15 @@ class InstanceResource:
     def _url(self, path: str) -> str:
         return f"{self._base_url}{_BASE_PATH}{path}"
 
-    def _request(
+    async def _request(
         self,
         method: str,
         path: str,
         *,
         json: Any | None = None,
         params: dict[str, str] | None = None,
-    ) -> httpx.Response:
-        response = self._client.request(
+    ) -> _Response:
+        response = await self._client.request(
             method,
             self._url(path),
             json=json,
@@ -78,7 +76,7 @@ class InstanceResource:
 
     # -- public API ---------------------------------------------------------
 
-    def list(
+    async def list(
         self,
         *,
         include: Sequence[str] | None = None,
@@ -137,10 +135,10 @@ class InstanceResource:
             filters=filters if filters else None,
         )
 
-        resp = self._request("GET", "/MCMInstances", params=params)
+        resp = await self._request("GET", "/MCMInstances", params=params)
         return parse_collection(resp.json(), MeasurementConceptInstance)
 
-    def get(
+    async def get(
         self,
         instance_id: UUID | str,
         *,
@@ -162,14 +160,14 @@ class InstanceResource:
         """
         expand = build_expand(include, INSTANCE_EXPAND_MAP)
         params = build_query_params(expand=expand)
-        resp = self._request(
+        resp = await self._request(
             "GET",
             f"/MCMInstances({str(instance_id)})",
             params=params,
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def create(
+    async def create(
         self,
         data: MeasurementConceptInstanceCreate,
     ) -> MeasurementConceptInstance:
@@ -185,14 +183,14 @@ class InstanceResource:
         MeasurementConceptInstance
             The newly created instance.
         """
-        resp = self._request(
+        resp = await self._request(
             "POST",
             "/MCMInstances",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def update(
+    async def update(
         self,
         instance_id: UUID | str,
         data: MeasurementConceptInstanceUpdate,
@@ -211,7 +209,7 @@ class InstanceResource:
         MeasurementConceptInstance
             The updated instance.
         """
-        resp = self._request(
+        resp = await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
@@ -220,7 +218,7 @@ class InstanceResource:
 
     # -- sub-entity updates -------------------------------------------------
 
-    def update_metering_location(
+    async def update_metering_location(
         self,
         instance_id: UUID | str,
         melo_id: UUID | str,
@@ -237,13 +235,13 @@ class InstanceResource:
         data:
             The update payload.
         """
-        self._request(
+        await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
-    def update_market_location(
+    async def update_market_location(
         self,
         instance_id: UUID | str,
         malo_id: UUID | str,
@@ -260,13 +258,13 @@ class InstanceResource:
         data:
             The update payload.
         """
-        self._request(
+        await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})/marketLocations({str(malo_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
-    def update_actor(
+    async def update_actor(
         self,
         instance_id: UUID | str,
         actor_id: UUID | str,
@@ -283,13 +281,13 @@ class InstanceResource:
         data:
             The update payload.
         """
-        self._request(
+        await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})/actors({str(actor_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
-    def update_metering_task(
+    async def update_metering_task(
         self,
         instance_id: UUID | str,
         melo_id: UUID | str,
@@ -309,13 +307,13 @@ class InstanceResource:
         data:
             The update payload.
         """
-        self._request(
+        await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})" f"/meteringTasks({str(task_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
-    def update_operand_mapping(
+    async def update_operand_mapping(
         self,
         instance_id: UUID | str,
         mapping_id: UUID | str,
@@ -332,7 +330,7 @@ class InstanceResource:
         data:
             The update payload.
         """
-        self._request(
+        await self._request(
             "PATCH",
             f"/MCMInstances({str(instance_id)})/operandMappings({str(mapping_id)})",
             json=data.model_dump(by_alias=True, exclude_none=True),
@@ -340,7 +338,7 @@ class InstanceResource:
 
     # -- lifecycle actions --------------------------------------------------
 
-    def init_change(
+    async def init_change(
         self,
         instance_id: UUID | str,
         data: InitChangeRequest,
@@ -359,14 +357,14 @@ class InstanceResource:
         MeasurementConceptInstance
             The instance after initiating the change.
         """
-        resp = self._request(
+        resp = await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/MCMService.initChange",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def init_merge(
+    async def init_merge(
         self,
         instance_id: UUID | str,
         data: InitMergeRequest,
@@ -385,14 +383,14 @@ class InstanceResource:
         MeasurementConceptInstance
             The instance after initiating the merge.
         """
-        resp = self._request(
+        resp = await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/MCMService.initMerge",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def init_shutdown(
+    async def init_shutdown(
         self,
         instance_id: UUID | str,
         data: InitShutdownRequest,
@@ -411,14 +409,14 @@ class InstanceResource:
         MeasurementConceptInstance
             The instance after initiating the shutdown.
         """
-        resp = self._request(
+        resp = await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/MCMService.initShutdown",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def init_version_cancel(
+    async def init_version_cancel(
         self,
         instance_id: UUID | str,
         data: InitVersionCancelRequest,
@@ -437,14 +435,14 @@ class InstanceResource:
         MeasurementConceptInstance
             The instance after initiating the version cancel.
         """
-        resp = self._request(
+        resp = await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/MCMService.initVersionCancel",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
 
-    def notify_device_removed(
+    async def notify_device_removed(
         self,
         instance_id: UUID | str,
         melo_id: UUID | str,
@@ -458,13 +456,13 @@ class InstanceResource:
         melo_id:
             The UUID of the metering location whose device was removed.
         """
-        self._request(
+        await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})"
             "/MCMService.notifySingleDeviceRemoved",
         )
 
-    def notify_market_location_removed(
+    async def notify_market_location_removed(
         self,
         instance_id: UUID | str,
         malo_id: UUID | str,
@@ -478,13 +476,13 @@ class InstanceResource:
         malo_id:
             The UUID of the market location that was removed.
         """
-        self._request(
+        await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/marketLocations({str(malo_id)})"
             "/MCMService.notifySingleMarketLocationRemoved",
         )
 
-    def notify_final_data_entry_ready(
+    async def notify_final_data_entry_ready(
         self,
         instance_id: UUID | str,
         change_process_id: UUID | str,
@@ -498,7 +496,7 @@ class InstanceResource:
         change_process_id:
             The UUID of the change process.
         """
-        self._request(
+        await self._request(
             "POST",
             f"/MCMInstances({str(instance_id)})/changeProcesses({str(change_process_id)})"
             "/processData/MCMService.notifyFinalDataEntryReady",

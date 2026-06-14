@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from typing import Any
 from uuid import UUID
 
-import httpx
-
 from sap_mcm_client._odata import (
     MIGRATION_EXPAND_MAP,
     ListResponse,
@@ -16,7 +14,7 @@ from sap_mcm_client._odata import (
     parse_collection,
     parse_entity,
 )
-from sap_mcm_client._resources._base import _MIGRATION_BASE_PATH, _raise_for_status
+from sap_mcm_client._resources._base import _MIGRATION_BASE_PATH, _AsyncHTTPClient, _raise_for_status, _Response
 from sap_mcm_client.types_migration import (
     MigrationInstance,
     MigrationInstanceResponse,
@@ -37,8 +35,8 @@ class MigrationResource:
     Parameters
     ----------
     client:
-        The shared :class:`httpx.Client` configured with authentication and
-        default OData headers.
+        The shared authenticated async HTTP client configured with
+        authentication and default OData headers.
     base_url:
         The root URL of the MCM service (e.g. ``"https://tenant.example.com"``).
         The migration path prefix is appended automatically.
@@ -46,7 +44,7 @@ class MigrationResource:
 
     _base_path = _MIGRATION_BASE_PATH
 
-    def __init__(self, client: httpx.Client, base_url: str) -> None:
+    def __init__(self, client: _AsyncHTTPClient, base_url: str) -> None:
         self._client = client
         self._base_url = base_url
 
@@ -55,15 +53,15 @@ class MigrationResource:
     def _url(self, path: str) -> str:
         return f"{self._base_url}{self._base_path}{path}"
 
-    def _request(
+    async def _request(
         self,
         method: str,
         path: str,
         *,
         json: Any | None = None,
         params: dict[str, str] | None = None,
-    ) -> httpx.Response:
-        response = self._client.request(
+    ) -> _Response:
+        response = await self._client.request(
             method,
             self._url(path),
             json=json,
@@ -74,7 +72,7 @@ class MigrationResource:
 
     # -- public API ---------------------------------------------------------
 
-    def migrate(self, instances: Sequence[MigrationInstance]) -> MigrationResponse:
+    async def migrate(self, instances: Sequence[MigrationInstance]) -> MigrationResponse:
         """Submit a batch of measurement concept instances for migration.
 
         Corresponds to ``POST /odata/v4/api/migrate/v1/migrate``.  The
@@ -97,10 +95,10 @@ class MigrationResource:
                 inst.model_dump(by_alias=True, exclude_none=True, mode="json") for inst in instances
             ],
         }
-        resp = self._request("POST", "/migrate", json=payload)
+        resp = await self._request("POST", "/migrate", json=payload)
         return parse_entity(resp.json(), MigrationResponse)
 
-    def get(
+    async def get(
         self,
         instance_id: UUID | str,
         *,
@@ -126,14 +124,14 @@ class MigrationResource:
         """
         expand = build_expand(include, MIGRATION_EXPAND_MAP)
         params = build_query_params(expand=expand)
-        resp = self._request(
+        resp = await self._request(
             "GET",
             f"/MigrationInstances({str(instance_id)})",
             params=params,
         )
         return parse_entity(resp.json(), MigrationInstanceResponse)
 
-    def list_staged(
+    async def list_staged(
         self,
         *,
         request_id: UUID | str | None = None,
@@ -188,10 +186,10 @@ class MigrationResource:
         if clauses:
             params["$filter"] = " and ".join(clauses)
 
-        resp = self._request("GET", "/StagedMigrationInstances", params=params)
+        resp = await self._request("GET", "/StagedMigrationInstances", params=params)
         return parse_collection(resp.json(), StagedMigrationInstance)
 
-    def purge(self, request_id: UUID | str) -> None:
+    async def purge(self, request_id: UUID | str) -> None:
         """Purge the staged migration data of a migration request.
 
         Corresponds to ``POST /odata/v4/api/migrate/v1/purge``.  Deletes the
@@ -204,9 +202,9 @@ class MigrationResource:
             The UUID of the migration request whose staged data should be
             purged.
         """
-        self._request("POST", "/purge", json={"requestId": str(request_id)})
+        await self._request("POST", "/purge", json={"requestId": str(request_id)})
 
-    def check_progress(self, instance_id: UUID | str) -> ProcessProgress:
+    async def check_progress(self, instance_id: UUID | str) -> ProcessProgress:
         """Check the migration progress of a measurement concept instance.
 
         Corresponds to ``GET /odata/v4/api/migrate/v1/MigrationInstances({id})``
@@ -223,13 +221,13 @@ class MigrationResource:
             The current and next status of the instance and any failed
             validations.
         """
-        resp = self._request(
+        resp = await self._request(
             "GET",
             f"/MigrationInstances({str(instance_id)})/MCMMigrationService.checkProgress",
         )
         return parse_entity(resp.json(), ProcessProgress)
 
-    def check_change_process_progress(self, change_process_id: UUID | str) -> ProcessProgress:
+    async def check_change_process_progress(self, change_process_id: UUID | str) -> ProcessProgress:
         """Check the migration progress of a change process.
 
         Corresponds to ``GET /odata/v4/api/migrate/v1/MIGChangeProcesses({id})``
@@ -246,7 +244,7 @@ class MigrationResource:
             The current and next status of the change process and any failed
             validations.
         """
-        resp = self._request(
+        resp = await self._request(
             "GET",
             f"/MIGChangeProcesses({str(change_process_id)})/MCMMigrationService.checkProgress",
         )
