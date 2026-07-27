@@ -27,7 +27,7 @@ uv run pylint unittests --rcfile=unittests/.pylintrc
 uv run mypy --show-error-codes src/sap_mcm_client --strict
 uv run mypy --show-error-codes unittests --strict
 uv run coverage run -m pytest unittests
-uv run coverage report --fail-under 80 --omit unittests/*
+uv run coverage report --fail-under 80 --omit "unittests/*"
 uv run codespell --ignore-words=domain-specific-terms.txt src README.md
 uv run black . && uv run isort .
 

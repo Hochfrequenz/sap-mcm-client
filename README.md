@@ -299,7 +299,7 @@ uv sync --group dev
 uv run pytest unittests                    # pytest
 uv run pylint sap_mcm_client                # pylint (10/10 required)
 uv run mypy --strict src/sap_mcm_client     # mypy --strict
-uv run coverage run -m pytest unittests && uv run coverage report --fail-under 80 --omit unittests/*  # coverage >= 80%
+uv run coverage run -m pytest unittests && uv run coverage report --fail-under 80 --omit "unittests/*"  # coverage >= 80%
 uv run codespell --ignore-words=domain-specific-terms.txt src README.md  # codespell
 uv run black . && uv run isort .           # auto-format
 ```
