@@ -295,13 +295,13 @@ client := mcm.NewClient(mcm.Config{
 ### Python
 
 ```bash
-pip install -e ".[tests,linting,type_check,formatting]"
-tox -e tests        # pytest
-tox -e linting      # pylint (10/10 required)
-tox -e type_check   # mypy --strict
-tox -e coverage     # coverage >= 80%
-tox -e spell_check  # codespell
-black . && isort .  # auto-format
+uv sync --group dev
+uv run pytest unittests                    # pytest
+uv run --group linting pylint sap_mcm_client   # pylint (10/10 required)
+uv run --group type_check mypy --strict src/sap_mcm_client  # mypy --strict
+uv run --group coverage coverage run -m pytest unittests && uv run coverage report  # coverage >= 80%
+uv run --group spell_check codespell --ignore-words=domain-specific-terms.txt src  # codespell
+uv run black . && uv run isort .           # auto-format
 ```
 
 ### Go
