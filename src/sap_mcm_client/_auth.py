@@ -96,7 +96,7 @@ class OAuth2ClientCredentials:
             if self._token is not None and time.monotonic() < self._expires_at:
                 return self._token
             await self._fetch_token()
-            assert self._token is not None  # noqa: S101 — guaranteed by _fetch_token
+            assert self._token is not None
             return self._token
 
     async def _fetch_token(self) -> None:
@@ -156,7 +156,7 @@ class OAuth2ClientCredentials:
             extra["expires_in"] = expires_in
             logger.info("mcm token fetched (expires_in=%ss)", expires_in, extra=extra)
         else:
-            assert error is not None  # noqa: S101 — always provided on the failure path
+            assert error is not None
             extra["error_type"] = type(error).__name__
             extra["error"] = str(error)
             logger.error("mcm token fetch failed: %s", type(error).__name__, extra=extra)

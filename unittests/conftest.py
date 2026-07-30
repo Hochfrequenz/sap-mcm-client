@@ -5,9 +5,10 @@ from __future__ import annotations
 import contextlib
 import json
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator, cast
+from typing import Any, cast
 
 import pytest
 from aioresponses import aioresponses
@@ -76,8 +77,8 @@ def _make_response(status_code: int, *, json_body: Any | None = None, text: str 
 def _seeded_auth() -> OAuth2ClientCredentials:
     """An auth object with a pre-seeded token so no token request is made."""
     auth = OAuth2ClientCredentials(TOKEN_URL, "client-id", "client-secret")
-    auth._token = "test-token"  # noqa: SLF001  # pylint: disable=protected-access
-    auth._expires_at = time.monotonic() + 3600  # noqa: SLF001  # pylint: disable=protected-access
+    auth._token = "test-token"  # pylint: disable=protected-access
+    auth._expires_at = time.monotonic() + 3600  # pylint: disable=protected-access
     return auth
 
 

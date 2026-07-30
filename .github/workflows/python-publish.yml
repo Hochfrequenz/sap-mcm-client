@@ -20,8 +20,8 @@ jobs:
         run: uv run pytest unittests
       - name: Run linting
         run: |
-          uv run pylint sap_mcm_client
-          uv run pylint unittests --rcfile=unittests/.pylintrc
+          uv run ruff check src/sap_mcm_client
+          uv run ruff check unittests
       - name: Run type check
         run: |
           uv run mypy --show-error-codes src/sap_mcm_client --strict

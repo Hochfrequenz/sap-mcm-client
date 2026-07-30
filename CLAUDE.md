@@ -18,10 +18,10 @@ Dual-language (Python + Go) typed client for the SAP Cloud for Utilities Foundat
 ```bash
 uv sync --group dev
 uv run pytest unittests                                        # pytest
-uv run pylint sap_mcm_client                                    # pylint (must score 10/10)
+uv run ruff check src/sap_mcm_client                            # ruff lint (must be clean)
 uv run mypy --strict src/sap_mcm_client                         # mypy --strict
 uv run coverage run -m pytest unittests && uv run coverage report --fail-under 80 --omit "unittests/*"  # coverage >= 80%
-uv run black . --check && uv run isort . --check                # formatting
+uv run ruff format --check .                                    # formatting
 ```
 
 ### Go

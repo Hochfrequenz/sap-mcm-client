@@ -191,7 +191,7 @@ class _AsyncHTTPClient:
             logger.error("mcm request failed: %s %s (%s)", method, url, type(error).__name__, extra=extra)
             return
 
-        assert status is not None  # noqa: S101 — provided on the success path
+        assert status is not None
         extra.update(http_status=status, response_bytes=len(text or ""), ok=200 <= status < 300)
         level = logging.ERROR if status >= 500 else logging.WARNING if status >= 400 else logging.INFO
         logger.log(level, "mcm request: %s %s -> %d in %.1fms", method, url, status, duration_ms, extra=extra)
@@ -209,7 +209,7 @@ def _parse_odata_error(response: _Response) -> dict[str, Any] | None:
         body = response.json()
         if isinstance(body, dict):
             return body
-    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
         pass
     return None
 

@@ -22,14 +22,14 @@ Run locally:
 ```bash
 # Python
 uv run pytest unittests
-uv run pylint sap_mcm_client
-uv run pylint unittests --rcfile=unittests/.pylintrc
+uv run ruff check src/sap_mcm_client
+uv run ruff check unittests
 uv run mypy --show-error-codes src/sap_mcm_client --strict
 uv run mypy --show-error-codes unittests --strict
 uv run coverage run -m pytest unittests
 uv run coverage report --fail-under 80 --omit "unittests/*"
 uv run codespell --ignore-words=domain-specific-terms.txt src README.md
-uv run black . && uv run isort .
+uv run ruff format .
 
 # Go
 go test ./mcm/...
@@ -124,7 +124,7 @@ Use conventional commits where appropriate:
 
 ## Code quality bar
 
-- **Python:** pylint 10.00/10, mypy `--strict` clean, black + isort formatted, codespell clean.
+- **Python:** ruff check clean, mypy `--strict` clean, ruff format formatted, codespell clean.
 - **Go:** `go vet` clean, `golangci-lint` clean with `dupl,goconst,gocyclo` enabled.
 - **Coverage:** Python ≥ 80%, Go ≥ 80% (enforced in CI).
 

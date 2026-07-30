@@ -162,7 +162,7 @@ class InstanceResource:
         params = build_query_params(expand=expand)
         resp = await self._request(
             "GET",
-            f"/MCMInstances({str(instance_id)})",
+            f"/MCMInstances({instance_id!s})",
             params=params,
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -211,7 +211,7 @@ class InstanceResource:
         """
         resp = await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})",
+            f"/MCMInstances({instance_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -237,7 +237,7 @@ class InstanceResource:
         """
         await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})",
+            f"/MCMInstances({instance_id!s})/meteringLocations({melo_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -260,7 +260,7 @@ class InstanceResource:
         """
         await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/marketLocations({str(malo_id)})",
+            f"/MCMInstances({instance_id!s})/marketLocations({malo_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -283,7 +283,7 @@ class InstanceResource:
         """
         await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/actors({str(actor_id)})",
+            f"/MCMInstances({instance_id!s})/actors({actor_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -309,7 +309,7 @@ class InstanceResource:
         """
         await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})" f"/meteringTasks({str(task_id)})",
+            f"/MCMInstances({instance_id!s})/meteringLocations({melo_id!s})/meteringTasks({task_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -332,7 +332,7 @@ class InstanceResource:
         """
         await self._request(
             "PATCH",
-            f"/MCMInstances({str(instance_id)})/operandMappings({str(mapping_id)})",
+            f"/MCMInstances({instance_id!s})/operandMappings({mapping_id!s})",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
 
@@ -359,7 +359,7 @@ class InstanceResource:
         """
         resp = await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/MCMService.initChange",
+            f"/MCMInstances({instance_id!s})/MCMService.initChange",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -385,7 +385,7 @@ class InstanceResource:
         """
         resp = await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/MCMService.initMerge",
+            f"/MCMInstances({instance_id!s})/MCMService.initMerge",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -411,7 +411,7 @@ class InstanceResource:
         """
         resp = await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/MCMService.initShutdown",
+            f"/MCMInstances({instance_id!s})/MCMService.initShutdown",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -437,7 +437,7 @@ class InstanceResource:
         """
         resp = await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/MCMService.initVersionCancel",
+            f"/MCMInstances({instance_id!s})/MCMService.initVersionCancel",
             json=data.model_dump(by_alias=True, exclude_none=True),
         )
         return parse_entity(resp.json(), MeasurementConceptInstance)
@@ -458,8 +458,7 @@ class InstanceResource:
         """
         await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/meteringLocations({str(melo_id)})"
-            "/MCMService.notifySingleDeviceRemoved",
+            f"/MCMInstances({instance_id!s})/meteringLocations({melo_id!s})/MCMService.notifySingleDeviceRemoved",
         )
 
     async def notify_market_location_removed(
@@ -478,8 +477,7 @@ class InstanceResource:
         """
         await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/marketLocations({str(malo_id)})"
-            "/MCMService.notifySingleMarketLocationRemoved",
+            f"/MCMInstances({instance_id!s})/marketLocations({malo_id!s})/MCMService.notifySingleMarketLocationRemoved",
         )
 
     async def notify_final_data_entry_ready(
@@ -498,6 +496,6 @@ class InstanceResource:
         """
         await self._request(
             "POST",
-            f"/MCMInstances({str(instance_id)})/changeProcesses({str(change_process_id)})"
+            f"/MCMInstances({instance_id!s})/changeProcesses({change_process_id!s})"
             "/processData/MCMService.notifyFinalDataEntryReady",
         )
