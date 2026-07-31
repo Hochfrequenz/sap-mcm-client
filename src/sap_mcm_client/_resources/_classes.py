@@ -123,7 +123,7 @@ class ClassResource:
         params = build_query_params(expand=expand)
         resp = await self._request(
             "GET",
-            f"/MeasurementConceptClasses({str(class_id)})",
+            f"/MeasurementConceptClasses({class_id!s})",
             params=params,
         )
         return parse_entity(resp.json(), MeasurementConceptClass)

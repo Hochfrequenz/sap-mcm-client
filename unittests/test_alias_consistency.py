@@ -97,7 +97,7 @@ def test_every_pydantic_alias_is_a_go_json_tag() -> None:
     for module_name, class_name, field_name, wire_name, explicit_alias in _iter_pydantic_fields():
         if wire_name in go_tags:
             continue
-        mismatches.append(f"{module_name}.{class_name}.{field_name} -> " f"wire={wire_name!r} alias={explicit_alias!r}")
+        mismatches.append(f"{module_name}.{class_name}.{field_name} -> wire={wire_name!r} alias={explicit_alias!r}")
 
     assert not mismatches, (
         "The following Pydantic fields produce a wire-format name that is "

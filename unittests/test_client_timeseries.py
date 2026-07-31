@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from io import BytesIO
 from uuid import UUID
 
@@ -234,8 +234,8 @@ class TestTimeSeriesDelete:
 
             await resource.delete(
                 time_series_id=self._TS_ID,
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                end_time=datetime(2026, 1, 31, tzinfo=UTC),
             )
             captured = captured_requests(mocked)
 
@@ -252,8 +252,8 @@ class TestTimeSeriesDelete:
 
             await resource.delete(
                 external_id="1+1-1:1.29.0",
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                end_time=datetime(2026, 1, 31, tzinfo=UTC),
             )
             captured = captured_requests(mocked)
 
@@ -267,15 +267,15 @@ class TestTimeSeriesDelete:
 
             with pytest.raises(ValueError):
                 await resource.delete(
-                    start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                    end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                    start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                    end_time=datetime(2026, 1, 31, tzinfo=UTC),
                 )
             with pytest.raises(ValueError):
                 await resource.delete(
                     time_series_id="a",
                     external_id="b",
-                    start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                    end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                    start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                    end_time=datetime(2026, 1, 31, tzinfo=UTC),
                 )
 
     async def test_delete_bulk_sends_delete_with_body(self) -> None:
@@ -286,8 +286,8 @@ class TestTimeSeriesDelete:
             req = DeleteTimeSeriesRequest(
                 uuids=[UUID(self._TS_ID)],
                 external_ids=["1+1-1:1.29.0"],
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                end_time=datetime(2026, 1, 31, tzinfo=UTC),
             )
             await resource.delete_bulk(req)
             captured = captured_requests(mocked)

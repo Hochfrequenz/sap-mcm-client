@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 import pytest
+from pydantic import ValidationError
 
 from sap_mcm_client import (
     Address,
@@ -235,7 +236,7 @@ class TestModelBehavior:
         cleaned = {k: v for k, v in instance_get_json.items() if k not in ("@context", "@metadataEtag")}
         inst = MeasurementConceptInstance.model_validate(cleaned)
 
-        with pytest.raises(Exception):  # pydantic ValidationError for frozen
+        with pytest.raises(ValidationError):  # pydantic error for frozen mutation
             inst.id_text = "CHANGED"  # type: ignore[misc]
 
     def test_extra_ignore(self) -> None:

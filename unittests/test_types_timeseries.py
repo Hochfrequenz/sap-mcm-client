@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -27,9 +27,9 @@ class TestTimeSeriesDataPoint:
 
         assert point.id == "0aa18b64-1111-4bbb-ae00-000000000001"
         assert point.import_id == "imp-20260101-0001"
-        assert point.timestamp == datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc)
+        assert point.timestamp == datetime(2026, 1, 1, 0, 0, tzinfo=UTC)
         assert point.time_zone_code == "UTC"
-        assert point.created_at == datetime(2026, 1, 2, 0, 0, tzinfo=timezone.utc)
+        assert point.created_at == datetime(2026, 1, 2, 0, 0, tzinfo=UTC)
         assert point.value == Decimal("42.500")
         assert point.missing is False
         assert point.quality == "MEASURED"
@@ -78,8 +78,8 @@ class TestDeleteTimeSeriesRequest:
     def test_requires_uuids_or_external_ids(self) -> None:
         with pytest.raises(ValueError):
             DeleteTimeSeriesRequest(
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                end_time=datetime(2026, 1, 31, tzinfo=UTC),
             )
 
     def test_empty_lists_are_rejected(self) -> None:
@@ -87,15 +87,15 @@ class TestDeleteTimeSeriesRequest:
             DeleteTimeSeriesRequest(
                 uuids=[],
                 external_ids=[],
-                start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+                start_time=datetime(2026, 1, 1, tzinfo=UTC),
+                end_time=datetime(2026, 1, 31, tzinfo=UTC),
             )
 
     def test_accepts_uuids_only(self) -> None:
         req = DeleteTimeSeriesRequest(
             uuids=[UUID("123e4567-e89b-12d3-a456-426614174000")],
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+            start_time=datetime(2026, 1, 1, tzinfo=UTC),
+            end_time=datetime(2026, 1, 31, tzinfo=UTC),
         )
         assert req.uuids is not None
         assert len(req.uuids) == 1
@@ -104,8 +104,8 @@ class TestDeleteTimeSeriesRequest:
     def test_accepts_external_ids_only(self) -> None:
         req = DeleteTimeSeriesRequest(
             external_ids=["1+1-1:1.29.0"],
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+            start_time=datetime(2026, 1, 1, tzinfo=UTC),
+            end_time=datetime(2026, 1, 31, tzinfo=UTC),
         )
         assert req.external_ids == ["1+1-1:1.29.0"]
 
@@ -113,8 +113,8 @@ class TestDeleteTimeSeriesRequest:
         req = DeleteTimeSeriesRequest(
             uuids=[UUID("123e4567-e89b-12d3-a456-426614174000")],
             external_ids=["1+1-1:1.29.0"],
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+            start_time=datetime(2026, 1, 1, tzinfo=UTC),
+            end_time=datetime(2026, 1, 31, tzinfo=UTC),
         )
         assert req.uuids is not None and req.external_ids is not None
 
@@ -122,8 +122,8 @@ class TestDeleteTimeSeriesRequest:
         req = DeleteTimeSeriesRequest(
             uuids=[UUID("123e4567-e89b-12d3-a456-426614174000")],
             external_ids=["1+1-1:1.29.0"],
-            start_time=datetime(2026, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2026, 1, 31, tzinfo=timezone.utc),
+            start_time=datetime(2026, 1, 1, tzinfo=UTC),
+            end_time=datetime(2026, 1, 31, tzinfo=UTC),
         )
         dumped = req.model_dump(by_alias=True, mode="json", exclude_none=True)
         assert "uuids" in dumped

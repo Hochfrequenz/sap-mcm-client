@@ -126,7 +126,7 @@ class MigrationResource:
         params = build_query_params(expand=expand)
         resp = await self._request(
             "GET",
-            f"/MigrationInstances({str(instance_id)})",
+            f"/MigrationInstances({instance_id!s})",
             params=params,
         )
         return parse_entity(resp.json(), MigrationInstanceResponse)
@@ -173,7 +173,7 @@ class MigrationResource:
         # OData V4 Guid literals are unquoted; string literals use single quotes.
         clauses: list[str] = []
         if request_id is not None:
-            clauses.append(f"requestId eq {str(request_id)}")
+            clauses.append(f"requestId eq {request_id!s}")
         if status is not None:
             escaped = status.replace("'", "''")
             clauses.append(f"status_code eq '{escaped}'")
@@ -223,7 +223,7 @@ class MigrationResource:
         """
         resp = await self._request(
             "GET",
-            f"/MigrationInstances({str(instance_id)})/MCMMigrationService.checkProgress",
+            f"/MigrationInstances({instance_id!s})/MCMMigrationService.checkProgress",
         )
         return parse_entity(resp.json(), ProcessProgress)
 
@@ -246,6 +246,6 @@ class MigrationResource:
         """
         resp = await self._request(
             "GET",
-            f"/MIGChangeProcesses({str(change_process_id)})/MCMMigrationService.checkProgress",
+            f"/MIGChangeProcesses({change_process_id!s})/MCMMigrationService.checkProgress",
         )
         return parse_entity(resp.json(), ProcessProgress)

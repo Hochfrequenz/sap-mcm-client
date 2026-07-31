@@ -303,7 +303,7 @@ class TimeSeriesResource:
         }
 
         if time_series_id is not None:
-            url = self._rest_url(f"/delete/{str(time_series_id)}")
+            url = self._rest_url(f"/delete/{time_series_id!s}")
         else:
             assert external_id is not None
             url = self._rest_url(f"/delete/externalId/{external_id}")
