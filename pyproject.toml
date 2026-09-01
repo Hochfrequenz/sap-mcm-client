@@ -24,7 +24,7 @@ dependencies = [
     # aiohttp 3.14's ClientResponse signature (missing stream_writer arg).
     # Tracking: https://github.com/pnuckowski/aioresponses/issues/289
     # Lift once aioresponses releases aiohttp 3.14 compatibility.
-    "aiohttp>=3.9,<3.14",
+    "aiohttp>=3.9,<3.15",
 ]
 dynamic = ["readme", "version"]
 
